@@ -1,10 +1,20 @@
-GetStdHandle ::= func(handle : u32) -> u64 := extern;
-WriteConsoleA ::= func(hConsoleOutput : u64, lpBuffer : u8&, write_count : u32, chars_written : u32 mut& weak, reserved : v0&) -> s32 := extern;
+if static(__is_windows)
+{
+	GetStdHandle ::= func(handle : u32) -> u64 := extern;
+	WriteConsoleA ::= func(hConsoleOutput : u64, lpBuffer : u8&, write_count : u32, chars_written : u32 mut& weak, reserved : v0&) -> s32 := extern;
+}
 
 putchar ::= func(chr : u8) -> v0
 {
-	handle ::= GetStdHandle(4294967285@u32);
-	WriteConsoleA(handle, ref chr, 1@u32, null, null);
+	if static(__is_windows)
+	{
+		handle ::= GetStdHandle(4294967285@u32);
+		WriteConsoleA(handle, ref chr, 1@u32, null, null);
+	}
+	if static(__is_linux)
+	{
+		__error("putchar linux support NYI");
+	}
 };
 
 putuint ::= func(v : u64 mut weak) -> v0
@@ -104,5 +114,8 @@ print ::= macro(T : auto) -> v0
 == build ==
 {
 	add_source_file("cstr.psy");
-	add_link_library("Kernel32.lib");
+	if static(__is_windows)
+	{
+		add_link_library("Kernel32.lib");
+	}
 }

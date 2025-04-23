@@ -5,29 +5,46 @@ arena ::= struct
 	cursor : u64;
 };
 
-VirtualAlloc ::= func(lpAddress : v0&, dwSize : u64, flAllocationType : s64, flProtect : s64) -> v0& := extern;
-VirtualFree ::= func(lpAddress : v0&, dwSize : u64, dwFreeType : s64) -> v0 := extern;
-ARENA_ADDR_RESERVE ::= 8000000000;
-MEM_RESERVE ::= 8192;
-MEM_COMMIT ::= 4096;
-MEM_RELEASE ::= 32768;
-PAGE_READWRITE ::= 4;
+if static(__is_windows)
+{
+	VirtualAlloc ::= func(lpAddress : v0&, dwSize : u64, flAllocationType : s64, flProtect : s64) -> v0& := extern;
+	VirtualFree ::= func(lpAddress : v0&, dwSize : u64, dwFreeType : s64) -> v0 := extern;
+	ARENA_ADDR_RESERVE ::= 8000000000;
+	MEM_RESERVE ::= 8192;
+	MEM_COMMIT ::= 4096;
+	MEM_RELEASE ::= 32768;
+	PAGE_READWRITE ::= 4;
+}
 
 arena_create ::= func(initial_capacity : u64) -> arena
 {
-	ptr ::= VirtualAlloc(null, ARENA_ADDR_RESERVE, MEM_RESERVE, PAGE_READWRITE);
-	VirtualAlloc(ptr, initial_capacity, MEM_COMMIT, PAGE_READWRITE);
-	return arena{.ptr := ptr; .cap := initial_capacity; .cursor := 0;};
+	if static(__is_windows)
+	{
+		ptr ::= VirtualAlloc(null, ARENA_ADDR_RESERVE, MEM_RESERVE, PAGE_READWRITE);
+		VirtualAlloc(ptr, initial_capacity, MEM_COMMIT, PAGE_READWRITE);
+		return arena{.ptr := ptr; .cap := initial_capacity; .cursor := 0;};
+	}
+	if static(__is_linux)
+	{
+		__error("arena_create linux support NYI");
+	}
 };
 
 [[private]]
 _arena_double_capacity ::= func(a : arena mut&) -> v0
 {
-	// need to increase size. let's double the cap.
-	byteptr ::= (a->ptr)@u8&;
-	offset ::= byteptr at (a->cap);
-	VirtualAlloc(offset@_, a->cap, MEM_COMMIT, PAGE_READWRITE);
-	(a->cap) = (a->cap) * 2;
+	if static(__is_windows)
+	{
+		// need to increase size. let's double the cap.
+		byteptr ::= (a->ptr)@u8&;
+		offset ::= byteptr at (a->cap);
+		VirtualAlloc(offset@_, a->cap, MEM_COMMIT, PAGE_READWRITE);
+		(a->cap) = (a->cap) * 2;
+	}
+	if static(__is_linux)
+	{
+		__error("_arena_double_capacity linux support NYI");
+	}
 };
 
 arena_push ::= func(a : arena mut&, bytes : u64) -> v0& weak
@@ -60,10 +77,20 @@ arena_clear ::= func(a : arena mut&) -> v0
 
 arena_destroy ::= func(a : arena) -> v0
 {
-	VirtualFree(a.ptr, 0, MEM_RELEASE);
+	if static(__is_windows)
+	{
+		VirtualFree(a.ptr, 0, MEM_RELEASE);
+	}
+	if static(__is_linux)
+	{
+		__error("arena_destroy linux support NYI");
+	}
 };
 
 == build ==
 {
-	add_link_library("Kernel32.lib");
+	if static(__is_windows)
+	{
+		add_link_library("Kernel32.lib");
+	}
 }
