@@ -26,6 +26,24 @@ strcpy ::= func(dst : u8 mut&, src : u8&, count : u64) -> v0
 	}
 };
 
+cstreql_n ::= func(lhs : u8&, rhs : u8&, n : u64) -> bool
+{
+	i : u64 mut := 0;
+	lchr : u8 mut;
+	rchr : u8 mut;
+	while(i < n)
+	{
+		lchr = deref(lhs at i);
+		rchr = deref(rhs at i);
+		if(lchr != rchr)
+		{
+			return false;
+		}
+		i = i + 1;
+	}
+	return true;
+};
+
 cstreql ::= func(lhs : u8&, rhs : u8&) -> bool
 {
 	llen ::= cstrlen(lhs);
@@ -39,20 +57,7 @@ cstreql ::= func(lhs : u8&, rhs : u8&) -> bool
 	{
 		min = llen;
 	}
-	i : u64 mut := 0;
-	lchr : u8 mut;
-	rchr : u8 mut;
-	while(i < min)
-	{
-		lchr = deref(lhs at i);
-		rchr = deref(rhs at i);
-		if(lchr != rchr)
-		{
-			return false;
-		}
-		i = i + 1;
-	}
-	return true;
+	return cstreql_n(lhs, rhs, min);
 };
 
 cstr_starts_with ::= func(str : u8&, needle : u8&) -> bool
