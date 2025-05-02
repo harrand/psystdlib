@@ -58,10 +58,9 @@ putfloat ::= func(f : f32 mut) -> v0
 	putuint(decimal_part);
 };
 
-puts ::= func(str : u8&) -> v0
+putss ::= func(str : u8&, len : u64) -> v0
 {
 	i : u64 mut := 0;
-	len ::= cstrlen(str);
 	chr : u8& mut := null;
 	while(i < len)
 	{
@@ -69,6 +68,12 @@ puts ::= func(str : u8&) -> v0
 		putchar(deref chr);
 		i = i + 1;
 	}
+};
+
+puts ::= func(str : u8&) -> v0
+{
+	len ::= cstrlen(str);
+	putss(str, len);
 };
 
 print ::= macro(T : auto) -> v0
