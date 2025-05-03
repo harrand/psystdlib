@@ -60,6 +60,19 @@ cstreql ::= func(lhs : u8&, rhs : u8&) -> bool
 	return cstreql_n(lhs, rhs, min);
 };
 
+cstr_starts_with_n ::= func(str : u8&, needle : u8&, len : u64) -> bool
+{
+	i : u64 mut;
+	for(i = 0, i < len, i = i + 1)
+	{
+		if(deref(str at i) != deref(needle at i))
+		{
+			return false;
+		}
+	}
+	return true;
+};
+
 cstr_starts_with ::= func(str : u8&, needle : u8&) -> bool
 {
 	len : u64 mut := cstrlen(str);
@@ -73,16 +86,7 @@ cstr_starts_with ::= func(str : u8&, needle : u8&) -> bool
 	{
 		len = len2;
 	}
-
-	i : u64 mut;
-	for(i = 0, i < len, i = i + 1)
-	{
-		if(deref(str at i) != deref(needle at i))
-		{
-			return false;
-		}
-	}
-	return true;
+	return cstr_starts_with_n(str, needle, len);
 };
 
 cstr_find ::= func(str : u8&, substr : u8&) -> s64
