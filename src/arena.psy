@@ -1,0 +1,45 @@
+arena ::= struct
+{
+	ptr : v0&;
+	cap : u64;
+	cur : u64;
+};
+
+VirtualAlloc ::= func(lpAddress : v0&, dwSize : u64, flAllocationType : s64, flProtect : s64 -> v0&) := extern;
+VirtualFree ::= func(lpAddress : v0&, dwSize : u64, dwFreeType : s64 -> v0) := extern;
+ARENA_ADDR_RESERVE ::= 8000000000;
+MEM_RESERVE ::= 8192;
+MEM_COMMIT ::= 4096;
+MEM_RELEASE ::= 32768;
+PAGE_READWRITE ::= 4;
+
+arena_create ::= func(initial_cap : u64 -> arena)
+{
+	ret ::= arena
+	{
+		.ptr := VirtualAlloc(zero, ARENA_ADDR_RESERVE, MEM_RESERVE, PAGE_READWRITE);
+	};
+	VirtualAlloc(ret.ptr, initial_cap, MEM_COMMIT, PAGE_READWRITE);
+	return ret;
+};
+
+_arena_dub ::= func(a : arena mut& -> v0)
+{
+	// need to increase size. let's double the cap.
+	byteptr ::= (a->ptr)@u8&;
+	offset ::= byteptr at (a->cap);
+	VirtualAlloc(offset@_, a->cap, MEM_COMMIT, PAGE_READWRITE);
+	(a->cap) = (a->cap) * 2;
+};
+
+arena_alloc ::= func(a : arena mut&, size : u64 -> v0&)
+{
+	while((a->cur + size) > a->cap)
+	{
+		_arena_dub(a);
+	}
+	addr ::= (a->ptr)@u64 mut;
+	addr = addr + (a->cur);
+	(a->cur) = (a->cur) + size;
+	return addr@_;
+};

@@ -5,13 +5,25 @@
 	set_optimization(0);
 }
 
+mystruct ::= struct
+{
+	x : u64;
+};
+
 main ::= func(-> s64)
 {
-	putchar('h');
-	putuint(69420);
+	s ::= zero@mystruct mut;
+	sptr ::= ref s;
+	putuint(s.x);
 	putchar(10);
-	putsint(-862);
+
+	sptr->x = 5;
+
+	putuint(s.x);
 	putchar(10);
-	putfloat(420.69);
+
+	putuint(sptr->x);
+	putchar(10);
+
 	return 0;
 };

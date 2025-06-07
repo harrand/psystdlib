@@ -1,0 +1,11 @@
+zstrlen ::= func(zstr : u8& -> u64)
+{
+	ptr : u8& mut := zstr;
+	i : u64 mut := 0;
+	while(deref ptr != 0)
+	{
+		ptr = ptr at 1;
+		i = i + 1;
+	}
+	return i;
+};
