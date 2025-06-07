@@ -29,3 +29,28 @@ putsint ::= func(i : s64 weak -> v0)
 		putuint(i);
 	}
 };
+	
+putfloat ::= func(f: f64 weak -> v0)
+{
+	if (f < 0.0)
+	{
+		putchar('-');
+		putfloat(-f);
+		return;
+	}
+
+	// Multiply first, then add 0.5 to round, then cast to integer
+	scaled ::= (f * 100.0 + 0.5)@s64;
+
+	int_part ::= scaled / 100;
+	decimal_part ::= scaled % 100;
+
+	putuint(int_part);
+	putchar('.');
+
+	if (decimal_part < 10)
+	{
+		putchar('0'); // pad single-digit decimals (e.g., ".09")
+	}
+	putuint(decimal_part);
+};
