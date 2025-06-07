@@ -23,6 +23,12 @@ arena_create ::= func(initial_cap : u64 -> arena)
 	return ret;
 };
 
+arena_destroy ::= func(a : arena mut& -> v0)
+{
+	VirtualFree(a->ptr, 0, MEM_RELEASE);
+	deref a = zero;
+};
+
 _arena_dub ::= func(a : arena mut& -> v0)
 {
 	// need to increase size. let's double the cap.
@@ -42,4 +48,9 @@ arena_alloc ::= func(a : arena mut&, size : u64 -> v0&)
 	addr = addr + (a->cur);
 	(a->cur) = (a->cur) + size;
 	return addr@_;
+};
+
+arena_clear ::= func(a : arena mut& -> v0)
+{
+	a->cur = 0;
 };
