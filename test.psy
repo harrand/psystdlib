@@ -1,0 +1,15 @@
+== build ==
+{
+	add_source_directory("src");
+	set_executable("stdtest");
+	set_optimization(0);
+}
+
+main ::= func(-> s64)
+{
+	putchar('h');
+	putuint(69420);
+	putchar(10);
+	putsint(-862);
+	return 0;
+};
