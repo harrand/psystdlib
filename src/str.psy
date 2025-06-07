@@ -32,3 +32,12 @@ sstr2zstr ::= func(s : sstr, a : arena mut& -> u8&)
 	deref(ret at (s.len)) = 0;
 	return ret;
 };
+
+zstr2sstr ::= func(zstr : u8& -> sstr)
+{
+	return sstr
+	{
+		.ptr := zstr;
+		.len := zstrlen(zstr);
+	};
+};
