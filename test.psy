@@ -10,8 +10,14 @@ mystruct ::= struct
 	x : u64;
 };
 
+global_arena_val : arena mut;
+global_arena : arena mut& mut;
+
 main ::= func(-> s64)
 {
+	global_arena_val = arena_create(1024 * 1024);
+	global_arena = ref global_arena_val;
+
 	s ::= zero@mystruct mut;
 	sptr ::= ref s;
 	putuint(s.x);
@@ -24,6 +30,23 @@ main ::= func(-> s64)
 
 	putuint(sptr->x);
 	putchar(10);
+
+	mydata ::= u8[5]{'h';'e';'l';'l';'o';};
+
+	mydata_str : sstr mut;
+	mydata_str = sstr
+	{
+		.ptr := mydata at 0;
+		.len := __sizeof(mydata);
+	};
+
+	putbytes(mydata_str.ptr, mydata_str.len);
+	putchar(10);
+
+	mydata_zstr : u8& mut;
+	mydata_zstr = sstr2zstr(mydata_str, global_arena);
+
+	putzstr(mydata_zstr);
 
 	return 0;
 };

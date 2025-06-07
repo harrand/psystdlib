@@ -54,3 +54,22 @@ putfloat ::= func(f: f64 weak -> v0)
 	}
 	putuint(decimal_part);
 };
+
+putbytes ::= func(ptr : u8&, len : u64 -> v0)
+{
+	i : u64 mut;
+	for(i = 0, i < len, i = i + 1)
+	{
+		putchar(deref (ptr at i));
+	}
+};
+
+putzstr ::= func(zstr : u8& -> v0)
+{
+	s : u8& mut := zstr;
+	while(deref(s) != 0)
+	{
+		putchar(deref s);
+		s = s at 1;
+	}
+};

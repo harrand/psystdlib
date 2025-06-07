@@ -15,12 +15,15 @@ PAGE_READWRITE ::= 4;
 
 arena_create ::= func(initial_cap : u64 -> arena)
 {
-	ret ::= arena
+	ptr : v0& mut;
+	ptr = VirtualAlloc(zero, ARENA_ADDR_RESERVE, MEM_RESERVE, PAGE_READWRITE);
+	VirtualAlloc(ptr, initial_cap, MEM_COMMIT, PAGE_READWRITE);
+	return arena
 	{
-		.ptr := VirtualAlloc(zero, ARENA_ADDR_RESERVE, MEM_RESERVE, PAGE_READWRITE);
+		.ptr := ptr;
+		.cap := initial_cap;
+		.cur := 0;
 	};
-	VirtualAlloc(ret.ptr, initial_cap, MEM_COMMIT, PAGE_READWRITE);
-	return ret;
 };
 
 arena_destroy ::= func(a : arena mut& -> v0)
@@ -31,6 +34,10 @@ arena_destroy ::= func(a : arena mut& -> v0)
 
 _arena_dub ::= func(a : arena mut& -> v0)
 {
+	if(a->cap == 0)
+	{
+		a->cap = 64;
+	}
 	// need to increase size. let's double the cap.
 	byteptr ::= (a->ptr)@u8&;
 	offset ::= byteptr at (a->cap);
@@ -38,12 +45,13 @@ _arena_dub ::= func(a : arena mut& -> v0)
 	(a->cap) = (a->cap) * 2;
 };
 
-arena_alloc ::= func(a : arena mut&, size : u64 -> v0&)
+arena_alloc ::= func(a : arena mut&, size : u64 -> v0& weak)
 {
-	while((a->cur + size) > a->cap)
+	while(((a->cur) + size) > (a->cap))
 	{
 		_arena_dub(a);
 	}
+
 	addr ::= (a->ptr)@u64 mut;
 	addr = addr + (a->cur);
 	(a->cur) = (a->cur) + size;
