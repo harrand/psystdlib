@@ -39,6 +39,7 @@ SHFILEOPSTRUCTA ::= struct
 	lpszProgressTitle : u8&;
 };
 
+// Shell32.lib
 SHFileOperationA ::= func(lpFileOp : SHFILEOPSTRUCTA& -> s32) := extern;
 
 FILETIME ::= struct
@@ -133,4 +134,72 @@ file_create ::= func(path : u8& -> bool)
 file_delete ::= func(path : u8& -> bool)
 {
 	return DeleteFileA(path) != 0;
+};
+
+directory_create ::= func(path : u8& -> bool)
+{
+	return CreateDirectoryA(path, 0) != 0;
+};
+
+directory_delete ::= func(path : u8&, a : arena mut& -> bool)
+{
+	// note: pFrom must be *double* null terminated.
+	// pain.
+	strlen ::= zstrlen(path);
+	pathbuf : u8 mut& := arena_alloc(a, strlen + 2);
+	strcpy_n(pathbuf, path, strlen);
+	deref(pathbuf at strlen) = 0;
+	deref(pathbuf at (strlen + 1)) = 0;
+
+	file_op ::= SHFILEOPSTRUCTA
+	{
+		.hwnd := 0;
+		.wFunc := 3;
+		.pFrom := pathbuf;
+		.pTo := "";
+		.fFlags := 0x0414;
+		.fAnyOperationsAborted := 0;
+		.hNameMappings := zero;
+		.lpszProgressTitle := "";
+
+	};
+	return SHFileOperationA(ref file_op) == 0;
+};
+
+_dir_iter ::= func(find : WIN32_FIND_DATAA mut&, callback : func(path : u8& -> v0) -> v0)
+{
+	if(!streql_n(find->cFileName at 0, ".", 1))
+	{
+		if(!streql_n(find->cFileName at 0, "..", 2))
+		{
+			callback(find->cFileName at 0);
+		}
+	}
+};
+
+directory_iterate ::= func(path : u8&, callback : func(path : u8& -> v0), a : arena mut& -> v0)
+{
+	// we're given a directory name
+	// we want to search dirname/*
+	bufsize : u64 mut;
+	bufsize = zstrlen(path) + 2;
+	buf : u8 mut& mut;
+	buf = arena_alloc(a, bufsize);
+	strcpy_n(buf, path, bufsize - 2);
+	deref(buf at (bufsize - 2)) = '/';
+	deref(buf at (bufsize - 1)) = '*';
+
+	find : WIN32_FIND_DATAA mut;
+	handle : u64 mut;
+	handle = FindFirstFileA(buf, ref find);
+	if(handle == -1)
+	{
+		return;
+	}
+	_dir_iter(ref find, callback);
+	while(FindNextFileA(handle, ref find) != 0)
+	{
+		_dir_iter(ref find, callback);
+	}
+	FindClose(handle);
 };

@@ -1,5 +1,6 @@
 == build ==
 {
+	add_link_library("Shell32.lib");
 	add_source_directory("src");
 	set_executable("stdtest");
 	set_optimization(0);
@@ -12,6 +13,12 @@ mystruct ::= struct
 
 global_arena_val : arena mut;
 global_arena : arena mut& mut;
+
+print_path ::= func(path : u8& -> v0)
+{
+	putzstr(path);
+	putchar(10);
+};
 
 main ::= func(-> s64)
 {
@@ -47,6 +54,8 @@ main ::= func(-> s64)
 	mydata_zstr = sstr2zstr(mydata_str, global_arena);
 
 	putzstr(mydata_zstr);
+	putchar(10);
 
+	directory_iterate(".", print_path, global_arena);
 	return 0;
 };

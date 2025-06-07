@@ -41,3 +41,25 @@ zstr2sstr ::= func(zstr : u8& -> sstr)
 		.len := zstrlen(zstr);
 	};
 };
+
+strcpy_n ::= func(dst : u8 mut&, src : u8&, len : u64 -> v0)
+{
+	i : u64 mut;
+	for(i = 0, i < len, i = i + 1)
+	{
+		deref(dst at i) = deref(src at i);
+	}
+};
+
+streql_n ::= func(l : u8&, r : u8&, len : u64 -> bool)
+{
+	i : u64 mut;
+	for(i = 0, i < len, i = i + 1)
+	{
+		if(deref(l at i) != deref(r at i))
+		{
+			return false;
+		}
+	}
+	return true;
+};
