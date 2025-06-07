@@ -1,0 +1,149 @@
+pi : f64 static := 3.14159;
+pihalf : f64 static := 1.57079;
+tau : f64 static := 6.28319;
+e : f64 static := 2.71828;
+
+fabs ::= func(x : f64 -> f64)
+{
+	if(x < 0.0)
+	{
+		return -x;
+	}
+	return x;
+};
+
+abs ::= func(x : s64 -> s64)
+{
+	if(x < 0)
+	{
+		return -x;
+	}
+	return x;
+};
+
+floor ::= func(x : f64 -> f64)
+{
+	i ::= x@s64;
+    if ((x < 0.0) && (i@f64 != x))
+	{
+		return (i - 1)@f64;
+    }
+	return i@f64;
+};
+
+sin_maclaurin ::= func(x : f64, terms : u64 -> f64)
+{
+	term : f64 mut := x;
+	sum : f64 mut := term;
+	n : u64 mut;
+	for(n = 1, n < terms, n = n + 1)
+	{
+		term = term * (-x * x / ((2 * n) * (2 * n + 1)));
+		sum = sum + term;
+	}
+
+	return sum;
+};
+
+sin ::= func(v : f64 -> f64)
+{
+	x : f64 mut := v;
+	// Reduce to x ∈ [0, tau)
+	turns ::= floor(x / tau);
+	x = (x - turns * tau);
+
+	// Map to x ∈ [-pi, pi]
+	if (x > pi)
+	{
+		x = x - tau;
+	}
+
+	// Reflect to x ∈ [-pi/2, pi/2] using sin(x) = sin(pi - x), sin(-x) = -sin(x)
+	negate : bool mut := false;
+
+	if (x > pihalf)
+	{
+		x = pi - x;
+	}
+	else
+	{
+		if (x < -pihalf)
+		{
+			x = -pi - x;
+			negate = true;
+		}
+	}
+
+	// Fast path for very small x
+	if ((x < 0.05) && (x > -0.05))
+	{
+		if(negate)
+		{
+			return -x;
+		}
+		return x;
+	}
+
+	result ::= sin_maclaurin(x, 10);
+	if(negate)
+	{
+		return -result;
+	}
+	return result;
+};
+
+cos_maclaurin ::= func(x : f64, terms : u64 -> f64)
+{
+	term : f64 mut := 1.0;
+	sum  : f64 mut := term;
+	n    : u64 mut;
+	for(n = 1, n < terms, n = n + 1)
+	{
+		term = term * (-x * x / ((2 * n - 1) * (2 * n)));
+		sum = sum + term;
+	}
+	return sum;
+};
+
+cos ::= func(v : f64 -> f64)
+{
+	x : f64 mut := v;
+	// Range reduce: x ∈ [0, tau)
+	turns ::= floor(x / tau);
+	x = x - turns * tau;
+
+	// Reflect to x ∈ [-pi, pi]
+	if (x > pi)
+	{
+		x = x - tau;
+	}
+
+	// Reflect to x ∈ [-pi/2, pi/2]
+	negate : bool mut := false;
+
+	if (x > pihalf)
+	{
+		x = pi - x;
+		negate = true;
+	}
+	else
+	{
+		if (x < -pihalf)
+		{
+			x = -pi - x;
+			negate = true;
+		}
+	}
+
+	if ((x < 0.05) && (x > -0.05))
+	{
+		return 1.0;
+	}
+
+	result ::= cos_maclaurin(x, 10);
+	if(negate)
+	{
+		return -result;
+	}
+	return result;
+};
