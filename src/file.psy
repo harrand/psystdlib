@@ -168,12 +168,9 @@ directory_delete ::= func(path : u8&, a : arena mut& -> bool)
 
 _dir_iter ::= func(find : WIN32_FIND_DATAA mut&, callback : func(path : u8& -> v0) -> v0)
 {
-	if(!streql_n(find->cFileName at 0, ".", 1))
+	if(!streql_n(find->cFileName at 0, ".", 1) && !streql_n(find->cFileName at 0, "..", 2))
 	{
-		if(!streql_n(find->cFileName at 0, "..", 2))
-		{
-			callback(find->cFileName at 0);
-		}
+		callback(find->cFileName at 0);
 	}
 };
 
