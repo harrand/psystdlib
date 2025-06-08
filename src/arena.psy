@@ -15,8 +15,7 @@ PAGE_READWRITE ::= 4;
 
 arena_create ::= func(initial_cap : u64 -> arena)
 {
-	ptr : v0& mut;
-	ptr = VirtualAlloc(zero, ARENA_ADDR_RESERVE, MEM_RESERVE, PAGE_READWRITE);
+	ptr ::= VirtualAlloc(zero, ARENA_ADDR_RESERVE, MEM_RESERVE, PAGE_READWRITE);
 	VirtualAlloc(ptr, initial_cap, MEM_COMMIT, PAGE_READWRITE);
 	return arena
 	{
