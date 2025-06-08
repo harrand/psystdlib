@@ -57,5 +57,9 @@ main ::= func(-> s64)
 	putchar(10);
 
 	directory_iterate(".", print_path, global_arena);
+
+	putzstr("log(2) == ");
+	putfloat(log(0.8));
+	putchar(10);
 	return 0;
 };

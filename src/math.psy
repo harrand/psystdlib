@@ -147,3 +147,51 @@ cos ::= func(v : f64 -> f64)
 	}
 	return result;
 };
+
+tan ::= func(f : f64 -> f64)
+{
+	return sin(f) / cos(f);
+};
+
+msb ::= func(i : u64 -> u64)
+{
+	r : u64 mut := 0;
+	v : u64 mut := i;
+	while(v > 0)
+	{
+		v = v >> 1;
+		r = r + 1;
+	}
+	return r;
+};
+
+log ::= func(f : f64 -> f64)
+{
+	if(f < 0.0)
+	{
+		return 0.0;
+	}
+	if((f > 0.0) && (f < 1.0))
+	{
+		// this is a very silly and crude approximation. massive grain of salt here as this region is highly nonlinear
+		return (-1.0 + f) * 1.7;
+	}
+	if(f < 2.0)
+	{
+		return -1.7417939 + (2.8212026 + (-1.4699568 + (0.44717955 - 0.056570851 * f) * f) * f) * f;	
+	}
+	log2 : s64 mut;
+	divisor : f64 mut;
+	x : f64 mut;
+	result : f64 mut;
+
+	log2 = (msb(f@_) - 1)@_;
+	divisor = (1 << log2)@f64;
+
+	x = f / divisor;    // normalized value between [1.0, 2.0]
+
+    result = -1.7417939 + (2.8212026 + (-1.4699568 + (0.44717955 - 0.056570851 * x) * x) * x) * x;
+    result = result + ((log2@f64) * 0.69314718); // ln(2) = 0.69314718
+
+	return result;
+};
