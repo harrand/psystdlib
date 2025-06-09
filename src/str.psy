@@ -16,7 +16,7 @@ sstr ::= struct
 	len : u64;
 };
 
-cpymem ::= func(dst : u8 mut&, src : u8&, len : u64 -> v0)
+cpymem ::= func(dst : u8 mut& weak, src : u8& weak, len : u64 -> v0)
 {
 	i : u64 mut;
 	for(i = 0, i < len, i = i + 1)
