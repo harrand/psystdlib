@@ -104,7 +104,7 @@ file_read ::= func(path : u8?, buf : u8 mut?, buflen : u64 -> v0)
 		return;
 	}
 
-	CloseHandle(handle);
+	defer CloseHandle(handle);
 	ReadFile(handle, buf, buflen@_, zero, 0);
 };
 
