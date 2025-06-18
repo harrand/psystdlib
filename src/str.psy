@@ -1,10 +1,10 @@
-zstrlen ::= func(zstr : u8& -> u64)
+zstrlen ::= func(zstr : u8? -> u64)
 {
-	ptr : u8& mut := zstr;
+	ptr : u8? mut := zstr;
 	i : u64 mut := 0;
 	while(deref ptr != 0)
 	{
-		ptr = ptr at 1;
+		ptr = ptr # 1;
 		i = i + 1;
 	}
 	return i;
@@ -12,28 +12,28 @@ zstrlen ::= func(zstr : u8& -> u64)
 
 sstr ::= struct
 {
-	ptr : u8&;
+	ptr : u8?;
 	len : u64;
 };
 
-cpymem ::= func(dst : u8 mut& weak, src : u8& weak, len : u64 -> v0)
+cpymem ::= func(dst : u8 mut? weak, src : u8? weak, len : u64 -> v0)
 {
 	i : u64 mut;
 	for(i = 0, i < len, i = i + 1)
 	{
-		deref(dst at i) = deref(src at i);
+		deref(dst # i) = deref(src # i);
 	}
 };
 
-sstr2zstr ::= func(s : sstr, a : arena mut& -> u8&)
+sstr2zstr ::= func(s : sstr, a : arena mut? -> u8?)
 {
-	ret : u8 mut& := arena_alloc(a, s.len + 1);
+	ret : u8 mut? := arena_alloc(a, s.len + 1);
 	cpymem(ret, s.ptr, s.len);
-	deref(ret at (s.len)) = 0;
+	deref(ret # (s.len)) = 0;
 	return ret;
 };
 
-zstr2sstr ::= func(zstr : u8& -> sstr)
+zstr2sstr ::= func(zstr : u8? -> sstr)
 {
 	return sstr
 	{
@@ -42,21 +42,21 @@ zstr2sstr ::= func(zstr : u8& -> sstr)
 	};
 };
 
-strcpy_n ::= func(dst : u8 mut&, src : u8&, len : u64 -> v0)
+strcpy_n ::= func(dst : u8 mut?, src : u8?, len : u64 -> v0)
 {
 	i : u64 mut;
 	for(i = 0, i < len, i = i + 1)
 	{
-		deref(dst at i) = deref(src at i);
+		deref(dst # i) = deref(src # i);
 	}
 };
 
-streql_n ::= func(l : u8&, r : u8&, len : u64 -> bool)
+streql_n ::= func(l : u8?, r : u8?, len : u64 -> bool)
 {
 	i : u64 mut;
 	for(i = 0, i < len, i = i + 1)
 	{
-		if(deref(l at i) != deref(r at i))
+		if(deref(l # i) != deref(r # i))
 		{
 			return false;
 		}

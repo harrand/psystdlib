@@ -1,6 +1,6 @@
-GetFileAttributesA ::= func(lpFileName : u8& -> u32) := extern;
+GetFileAttributesA ::= func(lpFileName : u8? -> u32) := extern;
 CreateFileA ::= func(
-	lpFileName : u8&,
+	lpFileName : u8?,
 	dwDesiredAccess : u32,
 	dwShareMode : u32,
 	lpSecurityAttributes : u64,
@@ -8,39 +8,39 @@ CreateFileA ::= func(
 	dwFlagsAndAttributes : u32,
 	hTemplateFile : u64
 	-> u64) := extern;
-GetFileSizeEx ::= func(hFile : u64, lpFileSize : s64 mut& -> s32) := extern;
+GetFileSizeEx ::= func(hFile : u64, lpFileSize : s64 mut? -> s32) := extern;
 CloseHandle ::= func(hObject : u64 -> s32) := extern;
 ReadFile ::= func(
 	hFile : u64,
-	lpBuffer : u8 mut&,
+	lpBuffer : u8 mut?,
 	nNumberOfBytesToRead : u32,
-	lpNumberOfBytesRead : u32 mut&,
+	lpNumberOfBytesRead : u32 mut?,
 	lpOverlapped : u64
 	-> s32) := extern;
 WriteFile ::= func(
 	hFile : u64,
-	lpBuffer : u8&,
+	lpBuffer : u8?,
 	nNumberOfBytesToWrite : u32,
-	lpNumberOfBytesWritten : u32 mut&,
+	lpNumberOfBytesWritten : u32 mut?,
 	lpOverlapped : u64
 	-> s32) := extern;
-DeleteFileA ::= func(lpFileName : u8& -> s32) := extern;
-CreateDirectoryA ::= func(lpPathName : u8&, lpSecurityAttributes : u64 -> s32) := extern;
+DeleteFileA ::= func(lpFileName : u8? -> s32) := extern;
+CreateDirectoryA ::= func(lpPathName : u8?, lpSecurityAttributes : u64 -> s32) := extern;
 
 SHFILEOPSTRUCTA ::= struct
 {
 	hwnd : u64;
 	wFunc : u32;
-	pFrom : u8&;
-	pTo : u8&;
+	pFrom : u8?;
+	pTo : u8?;
 	fFlags : s32;
 	fAnyOperationsAborted : s32;
-	hNameMappings : v0&;
-	lpszProgressTitle : u8&;
+	hNameMappings : v0?;
+	lpszProgressTitle : u8?;
 };
 
 // Shell32.lib
-SHFileOperationA ::= func(lpFileOp : SHFILEOPSTRUCTA& -> s32) := extern;
+SHFileOperationA ::= func(lpFileOp : SHFILEOPSTRUCTA? -> s32) := extern;
 
 FILETIME ::= struct
 {
@@ -65,17 +65,17 @@ WIN32_FIND_DATAA ::= struct
 	wFinderFlags : u32;
 };
 
-FindFirstFileA ::= func(lpFileName : u8&, lpFindFileData : WIN32_FIND_DATAA mut& -> u64) := extern;
-FindNextFileA ::= func(hFindFile : u64, lpFindFileData : WIN32_FIND_DATAA mut& -> s32) := extern;
+FindFirstFileA ::= func(lpFileName : u8?, lpFindFileData : WIN32_FIND_DATAA mut? -> u64) := extern;
+FindNextFileA ::= func(hFindFile : u64, lpFindFileData : WIN32_FIND_DATAA mut? -> s32) := extern;
 FindClose ::= func(hFindFile : u64 -> s32) := extern;
 
-file_exists ::= func(path_zstr : u8& -> bool)
+file_exists ::= func(path_zstr : u8? -> bool)
 {
 	file_attribs ::= GetFileAttributesA(path_zstr);
 	return file_attribs != -1;
 };
 
-file_size_bytes ::= func(path : u8& -> u64)
+file_size_bytes ::= func(path : u8? -> u64)
 {
 	// CreateFile in this context is cheap, don't worry.
 	handle ::= CreateFileA(path, 2147483648, 3, 0, 3, 128, 0);
@@ -96,7 +96,7 @@ file_size_bytes ::= func(path : u8& -> u64)
 	return size@_;
 };
 
-file_read ::= func(path : u8&, buf : u8 mut&, buflen : u64 -> v0)
+file_read ::= func(path : u8?, buf : u8 mut?, buflen : u64 -> v0)
 {
 	handle ::= CreateFileA(path, 2147483648, 3, 0, 3, 128, 0);
 	if(handle == -1)
@@ -108,7 +108,7 @@ file_read ::= func(path : u8&, buf : u8 mut&, buflen : u64 -> v0)
 	ReadFile(handle, buf, buflen@_, zero, 0);
 };
 
-file_write ::= func(path : u8&, buf : u8&, buflen : u64 -> v0)
+file_write ::= func(path : u8?, buf : u8?, buflen : u64 -> v0)
 {
 	handle ::= CreateFileA(path, 1073741824, 3, 0, 3, 128, 0);
 	defer CloseHandle(handle);
@@ -120,7 +120,7 @@ file_write ::= func(path : u8&, buf : u8&, buflen : u64 -> v0)
 	WriteFile(handle, buf, buflen@_, zero, 0);
 };
 
-file_create ::= func(path : u8& -> bool)
+file_create ::= func(path : u8? -> bool)
 {
 	handle ::= CreateFileA(path, 1073741824, 3, 0, 1, 128, 0);
 	if(handle == -1)
@@ -131,25 +131,25 @@ file_create ::= func(path : u8& -> bool)
 	return true;
 };
 
-file_delete ::= func(path : u8& -> bool)
+file_delete ::= func(path : u8? -> bool)
 {
 	return DeleteFileA(path) != 0;
 };
 
-directory_create ::= func(path : u8& -> bool)
+directory_create ::= func(path : u8? -> bool)
 {
 	return CreateDirectoryA(path, 0) != 0;
 };
 
-directory_delete ::= func(path : u8&, a : arena mut& -> bool)
+directory_delete ::= func(path : u8?, a : arena mut? -> bool)
 {
 	// note: pFrom must be *double* null terminated.
 	// pain.
 	strlen ::= zstrlen(path);
-	pathbuf : u8 mut& := arena_alloc(a, strlen + 2);
+	pathbuf : u8 mut? := arena_alloc(a, strlen + 2);
 	strcpy_n(pathbuf, path, strlen);
-	deref(pathbuf at strlen) = 0;
-	deref(pathbuf at (strlen + 1)) = 0;
+	deref(pathbuf # strlen) = 0;
+	deref(pathbuf # (strlen + 1)) = 0;
 
 	file_op ::= SHFILEOPSTRUCTA
 	{
@@ -166,25 +166,25 @@ directory_delete ::= func(path : u8&, a : arena mut& -> bool)
 	return SHFileOperationA(ref file_op) == 0;
 };
 
-_dir_iter ::= func(find : WIN32_FIND_DATAA mut&, callback : func(path : u8& -> v0) -> v0)
+_dir_iter ::= func(find : WIN32_FIND_DATAA mut?, callback : func(path : u8? -> v0) -> v0)
 {
-	if(!streql_n(find->cFileName at 0, ".", 1) && !streql_n(find->cFileName at 0, "..", 2))
+	if(!streql_n(find->cFileName # 0, ".", 1) && !streql_n(find->cFileName # 0, "..", 2))
 	{
-		callback(find->cFileName at 0);
+		callback(find->cFileName # 0);
 	}
 };
 
-directory_iterate ::= func(path : u8&, callback : func(path : u8& -> v0), a : arena mut& -> v0)
+directory_iterate ::= func(path : u8?, callback : func(path : u8? -> v0), a : arena mut? -> v0)
 {
 	// we're given a directory name
 	// we want to search dirname/*
 	bufsize : u64 mut;
 	bufsize = zstrlen(path) + 2;
-	buf : u8 mut& mut;
+	buf : u8 mut? mut;
 	buf = arena_alloc(a, bufsize);
 	strcpy_n(buf, path, bufsize - 2);
-	deref(buf at (bufsize - 2)) = '/';
-	deref(buf at (bufsize - 1)) = '*';
+	deref(buf # (bufsize - 2)) = '/';
+	deref(buf # (bufsize - 1)) = '*';
 
 	find : WIN32_FIND_DATAA mut;
 	handle : u64 mut;
