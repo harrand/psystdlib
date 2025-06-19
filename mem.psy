@@ -1,15 +1,10 @@
-memcpy ::= func(dst : u8 mut? weak, src : u8? weak, len : u64 -> v0)
+memcopy ::= func(dst : u8 mut? weak, src : u8? weak, len : u64 -> v0)
 {
 	i : u64 mut;
 	for(i = 0, i < len, i = i + 1)
 	{
 		deref(dst # i) = deref(src # i);
 	}
-};
-
-memset ::= func(dst : u8 mut? weak, byte : u8, len : u64 -> v0)
-{
-	memfill(dst, byte, len);
 };
 
 memfill ::= func(dst : u8 mut? weak, byte : u8, len : u64 -> v0)

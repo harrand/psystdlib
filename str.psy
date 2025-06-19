@@ -19,7 +19,7 @@ sstr ::= struct
 sstr2zstr ::= func(s : sstr, a : arena mut? -> u8?)
 {
 	ret : u8 mut? := arena_alloc(a, s.len + 1);
-	memcpy(ret, s.ptr, s.len);
+	memcopy(ret, s.ptr, s.len);
 	deref(ret # (s.len)) = 0;
 	return ret;
 };
