@@ -54,3 +54,48 @@ streql_n ::= func(l : u8?, r : u8?, len : u64 -> bool)
 	}
 	return true;
 };
+
+str_starts_with_n ::= func(str : u8?, needle : u8?, len : u64 -> bool)
+{
+	i : u64 mut;
+	for(i = 0, i < len, i = i + 1)
+	{
+		if(deref(str # i) != deref(needle # i))
+		{
+			return false;
+		}
+	}
+	return true;
+};
+
+zstr_starts_with ::= func(str : u8?, needle : u8? -> bool)
+{
+	len : u64 mut := zstrlen(str);
+	len2 ::= zstrlen(needle);
+	if(len2 > len)
+	{
+		// substring is larger, so it cant contain it.
+		return false;
+	}
+	if(len2 < len)
+	{
+		len = len2;
+	}
+	return str_starts_with_n(str, needle, len);
+};
+
+zstreql ::= func(lhs : u8?, rhs : u8? -> bool)
+{
+	llen ::= zstrlen(lhs);
+	rlen ::= zstrlen(rhs);
+	if(llen != rlen)
+	{
+		return false;
+	}
+	min : u64 mut := rlen;
+	if(llen < rlen)
+	{
+		min = llen;
+	}
+	return streql_n(lhs, rhs, min);
+};
