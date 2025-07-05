@@ -71,8 +71,13 @@ FindClose ::= func(hFindFile : u64 -> s32) := extern;
 
 file_exists ::= func(path_zstr : u8? -> bool)
 {
-	file_attribs ::= GetFileAttributesA(path_zstr);
-	return file_attribs != -1;
+	handle ::= CreateFileA(path_zstr, 2147483648, 3, 0, 3, 128, 0);
+	if(handle == -1)
+	{
+		return false;
+	}
+	CloseHandle(handle);
+	return true;
 };
 
 file_size_bytes ::= func(path : u8? -> u64)
