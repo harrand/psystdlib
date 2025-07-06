@@ -1,11 +1,21 @@
-GetStdHandle ::= func(handle : u32 -> u64) := extern;
-WriteConsoleA ::= func(hConsoleOutput : u64, lpBuffer : u8?, write_count : u32, chars_written : u32 mut? weak, reserved : v0? -> s32) := extern;
-//WriteFile ::= func(hFile : u64, lpBuffer : u8?, nNumberOfBytesToWrite : u32, chars_written : u32 mut? weak, lpOverlapped : v0? -> s32) := extern;
+static if(_win32)
+{
+	GetStdHandle ::= func(handle : u32 -> u64) := extern;
+	WriteConsoleA ::= func(hConsoleOutput : u64, lpBuffer : u8?, write_count : u32, chars_written : u32 mut? weak, reserved : v0? -> s32) := extern;
+	//WriteFile ::= func(hFile : u64, lpBuffer : u8?, nNumberOfBytesToWrite : u32, chars_written : u32 mut? weak, lpOverlapped : v0? -> s32) := extern;
+}
 
 putchar ::= func(char : u8 -> v0)
 {
-	chr ::= char;
-	WriteFile(GetStdHandle(4294967285@u32), ref chr, 1@u32, zero, zero);
+	static if(_win32)
+	{
+		chr ::= char;
+		WriteFile(GetStdHandle(4294967285@u32), ref chr, 1@u32, zero, zero);
+	}
+	else
+	{
+		__error("putchar NYI on linux");
+	}
 };
 
 putuint ::= func(i : u64 weak -> v0)

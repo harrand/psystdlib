@@ -5,43 +5,68 @@ arena ::= struct
 	cur : u64;
 };
 
-VirtualAlloc ::= func(lpAddress : v0?, dwSize : u64, flAllocationType : s64, flProtect : s64 -> v0?) := extern;
-VirtualFree ::= func(lpAddress : v0?, dwSize : u64, dwFreeType : s64 -> v0) := extern;
-ARENA_ADDR_RESERVE ::= 8000000000;
-MEM_RESERVE ::= 8192;
-MEM_COMMIT ::= 4096;
-MEM_RELEASE ::= 32768;
-PAGE_READWRITE ::= 4;
+static if(_win32)
+{
+	VirtualAlloc ::= func(lpAddress : v0?, dwSize : u64, flAllocationType : s64, flProtect : s64 -> v0?) := extern;
+	VirtualFree ::= func(lpAddress : v0?, dwSize : u64, dwFreeType : s64 -> v0) := extern;
+	ARENA_ADDR_RESERVE ::= 8000000000;
+	MEM_RESERVE ::= 8192;
+	MEM_COMMIT ::= 4096;
+	MEM_RELEASE ::= 32768;
+	PAGE_READWRITE ::= 4;
+}
 
 arena_create ::= func(initial_cap : u64 -> arena)
 {
-	ptr ::= VirtualAlloc(zero, ARENA_ADDR_RESERVE, MEM_RESERVE, PAGE_READWRITE);
-	VirtualAlloc(ptr, initial_cap, MEM_COMMIT, PAGE_READWRITE);
-	return arena
+	static if(_win32)
 	{
-		.ptr := ptr;
-		.cap := initial_cap;
-		.cur := 0;
-	};
+		ptr ::= VirtualAlloc(zero, ARENA_ADDR_RESERVE, MEM_RESERVE, PAGE_READWRITE);
+		VirtualAlloc(ptr, initial_cap, MEM_COMMIT, PAGE_READWRITE);
+		return arena
+		{
+			.ptr := ptr;
+			.cap := initial_cap;
+			.cur := 0;
+		};
+	}
+	else
+	{
+		__error("arena_create NYI on linux");
+	}
+
 };
 
 arena_destroy ::= func(a : arena mut? -> v0)
 {
-	VirtualFree(a->ptr, 0, MEM_RELEASE);
-	deref a = zero;
+	static if(_win32)
+	{
+		VirtualFree(a->ptr, 0, MEM_RELEASE);
+		deref a = zero;
+	}
+	else
+	{
+		__error("arena_destroy NYI on linux");
+	}
 };
 
 _arena_dub ::= func(a : arena mut? -> v0)
 {
-	if(a->cap == 0)
+	static if(_win32)
 	{
-		a->cap = 64;
+		if(a->cap == 0)
+		{
+			a->cap = 64;
+		}
+		// need to increase size. let's double the cap.
+		byteptr ::= (a->ptr)@u8?;
+		offset ::= byteptr # (a->cap);
+		VirtualAlloc(offset@_, a->cap, MEM_COMMIT, PAGE_READWRITE);
+		(a->cap) = (a->cap) * 2;
 	}
-	// need to increase size. let's double the cap.
-	byteptr ::= (a->ptr)@u8?;
-	offset ::= byteptr # (a->cap);
-	VirtualAlloc(offset@_, a->cap, MEM_COMMIT, PAGE_READWRITE);
-	(a->cap) = (a->cap) * 2;
+	else
+	{
+		__error("_arena_dub NYI on linux");
+	}
 };
 
 arena_alloc ::= func(a : arena mut?, size : u64 -> v0? weak)
