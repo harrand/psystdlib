@@ -10,27 +10,12 @@ zstrlen ::= func(zstr : u8? -> u64)
 	return i;
 };
 
-sstr ::= struct
+sstr2zstr ::= func(s : u8?, len : u64, a : arena mut? -> u8?)
 {
-	ptr : u8?;
-	len : u64;
-};
-
-sstr2zstr ::= func(s : sstr, a : arena mut? -> u8?)
-{
-	ret : u8 mut? := arena_alloc(a, s.len + 1);
-	memcopy(ret, s.ptr, s.len);
-	deref(ret # (s.len)) = 0;
+	ret : u8 mut? := arena_alloc(a, len + 1);
+	memcopy(ret, s, len);
+	deref(ret # len) = 0;
 	return ret;
-};
-
-zstr2sstr ::= func(zstr : u8? -> sstr)
-{
-	return sstr
-	{
-		.ptr := zstr;
-		.len := zstrlen(zstr);
-	};
 };
 
 strcpy_n ::= func(dst : u8 mut?, src : u8?, len : u64 -> v0)
