@@ -84,3 +84,13 @@ putzstr ::= func(zstr : u8? -> v0)
 		s = s # 1;
 	}
 };
+
+putloc ::= func(loc : srcloc -> v0)
+{
+	putzstr(loc.file);
+	putchar('(');
+	putuint(loc.line);
+	putchar(':');
+	putuint(loc.column);
+	putchar(')');
+};
