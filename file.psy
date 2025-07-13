@@ -71,6 +71,32 @@ static if(_win32)
 	FindNextFileA ::= func(hFindFile : u64, lpFindFileData : WIN32_FIND_DATAA mut? -> s32) := extern;
 	FindClose ::= func(hFindFile : u64 -> s32) := extern;
 }
+else
+{
+	stat_t ::= struct
+	{
+		st_dev : u64;
+		st_ino : u64;
+		st_mode : u32;
+
+		st_nlink : u64;
+		st_uid : u32;
+		st_gid : u32;
+		st_rdev : u64;
+
+		st_size : s64;
+		st_blksize : s64;
+		st_blocks : s64;
+
+		st_atim : timespec;
+		st_mtim : timespec;
+		st_ctim : timespec;
+	};
+
+	stat ::= func(path : u8?, statbuf : stat_t mut? -> s32) := extern;
+	access ::= func(path : u8?, mode : s32 -> s32) := extern;
+	F_OK ::= 0;
+}
 
 file_exists ::= func(path_zstr : u8? -> bool)
 {
@@ -86,7 +112,7 @@ file_exists ::= func(path_zstr : u8? -> bool)
 	}
 	else
 	{
-		__error("file_exists NYI on linux");
+		return access(path_zstr, F_OK) == 0;
 	}
 };
 
@@ -114,7 +140,9 @@ file_size_bytes ::= func(path : u8? -> u64)
 	}
 	else
 	{
-		__error("file_size_bytes NYI on linux");
+		sb : stat_t mut;
+		stat(path, ref sb);
+		return sb.st_size@_;
 	}
 };
 
