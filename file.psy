@@ -287,12 +287,12 @@ else
 	chdir ::= func(path : u8? -> s32) := extern;
 }
 
-directory_get_cwd ::= func(dirname : u8? mut?, dirname_len : u64 mut? -> v0)
+directory_get_cwd ::= func(dirname : u8? mut?, dirname_len : u64 mut?, a : arena mut? -> v0)
 {
 	static if(_win32)
 	{
 		deref(dirname_len) = GetCurrentDirectoryA(0, zero)@_;
-		deref(dirname) = arena_alloc(global_arena, deref dirname_len);
+		deref(dirname) = arena_alloc(a, deref dirname_len);
 		GetCurrentDirectoryA(deref(dirname_len)@_, deref dirname);
 	}
 	else
