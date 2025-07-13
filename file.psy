@@ -274,3 +274,37 @@ directory_iterate ::= func(path : u8?, callback : func(path : u8? -> v0), a : ar
 		__error("directory_delete NYI on linux");
 	}
 };
+
+directory_get_cwd ::= func(dirname : u8? mut?, dirname_len : u64 mut? -> v0)
+{
+	static if(_win32)
+	{
+		deref(dirname_len) = GetCurrentDirectoryA(0, zero)@_;
+		deref(dirname) = arena_alloc(global_arena, deref dirname_len);
+		GetCurrentDirectoryA(deref(dirname_len)@_, deref dirname);
+	}
+	else
+	{
+		// note: this leaks as we dont use free()
+		deref(dirname) = getcwd(zero, 0);
+		deref(dirname_len) = (zstrlen(deref dirname)@_);
+	}
+};
+
+directory_set_cwdz ::= func(dirname_zstr : u8? -> v0)
+{
+	static if(_win32)
+	{
+		SetCurrentDirectoryA(dirname_zstr);
+	}
+	else
+	{
+		chdir(dirname_zstr);
+	}
+};
+
+directory_set_cwd ::= func(dirname : u8?, dirname_len : u64, a : arena mut? -> v0)
+{
+	zstr ::= sstr2zstr(dirname, dirname_len, a);
+	directory_set_cwdz(zstr);
+};
