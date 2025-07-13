@@ -1,0 +1,34 @@
+static if(_win32)
+{
+	QueryPerformanceCounter ::= func(lpPerformanceCount : s64 mut? -> s32 ):= extern;
+	QueryPerformanceFrequency ::= func(lpPerformanceCount : s64 mut? -> s32 ):= extern;
+}
+else
+{
+	timespec ::= struct
+	{
+		tv_sec : s64;
+		tv_nsec : s64;
+	};
+
+	clock_gettime ::= func(clk_id : s32, tp : timespec mut? -> s32) := extern;
+}
+
+// get the time, in microseconds
+time_static ::= func(-> s64)
+{
+	static if(_win32)
+	{
+		t : s64 mut;
+		QueryPerformanceCounter(ref t);
+		f : s64 mut;
+		QueryPerformanceFrequency(ref f);
+		return t * 1000000 / f;	
+	}
+	else
+	{
+		ts : timespec mut;
+		clock_gettime(1, ref ts);
+		return (ts.tv_sec * 1000000) + (ts.tv_nsec / 1000);
+	}
+};
