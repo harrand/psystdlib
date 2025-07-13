@@ -5,15 +5,26 @@ arena ::= struct
 	cur : u64;
 };
 
+ARENA_ADDR_RESERVE ::= 8000000000;
 static if(_win32)
 {
 	VirtualAlloc ::= func(lpAddress : v0?, dwSize : u64, flAllocationType : s64, flProtect : s64 -> v0?) := extern;
 	VirtualFree ::= func(lpAddress : v0?, dwSize : u64, dwFreeType : s64 -> v0) := extern;
-	ARENA_ADDR_RESERVE ::= 8000000000;
 	MEM_RESERVE ::= 8192;
 	MEM_COMMIT ::= 4096;
 	MEM_RELEASE ::= 32768;
 	PAGE_READWRITE ::= 4;
+}
+else
+{
+	mmap ::= func(addr : v0? weak, length : u64, prot : s32, flags : s32, fd : s32, offset : s64 -> v0? weak) := extern;
+	munmap ::= func(addr : v0? weak, length : u64 -> s32) := extern;
+	mprotect ::= func(addr : v0? weak, size : u64, prot : s32 -> s32) := extern;
+	MAP_ANONYMOUS ::= 0x20;
+	PROT_NONE ::= 0x00;
+	PROT_READ ::= 0x01;
+	PROT_WRITE ::= 0x02;
+	PROT_EXEC ::= 0x04;
 }
 
 arena_create ::= func(initial_cap : u64 -> arena)
@@ -31,7 +42,14 @@ arena_create ::= func(initial_cap : u64 -> arena)
 	}
 	else
 	{
-		__error("arena_create NYI on linux");
+		ptr ::= mmap(zero, ARENA_ADDR_RESERVE, PROT_NONE, MAP_ANONYMOUS, zero, zero);
+		mprotect(ptr, initial_cap, PROT_WRITE | PROT_READ);
+		return arena
+		{
+			.ptr := ptr;
+			.cap := initial_cap;
+			.cur := 0;
+		};
 	}
 
 };
@@ -41,32 +59,32 @@ arena_destroy ::= func(a : arena mut? -> v0)
 	static if(_win32)
 	{
 		VirtualFree(a->ptr, 0, MEM_RELEASE);
-		deref a = zero;
 	}
 	else
 	{
-		__error("arena_destroy NYI on linux");
+		munmap(a->ptr, ARENA_ADDR_RESERVE);
 	}
+	deref a = zero;
 };
 
 _arena_dub ::= func(a : arena mut? -> v0)
 {
+	if(a->cap == 0)
+	{
+		a->cap = 64;
+	}
+	// need to increase size. let's double the cap.
+	byteptr ::= (a->ptr)@u8?;
+	offset ::= byteptr # (a->cap);
 	static if(_win32)
 	{
-		if(a->cap == 0)
-		{
-			a->cap = 64;
-		}
-		// need to increase size. let's double the cap.
-		byteptr ::= (a->ptr)@u8?;
-		offset ::= byteptr # (a->cap);
 		VirtualAlloc(offset@_, a->cap, MEM_COMMIT, PAGE_READWRITE);
-		(a->cap) = (a->cap) * 2;
 	}
 	else
 	{
-		__error("_arena_dub NYI on linux");
+		mprotect(a->ptr, a->cap * 2, PROT_WRITE | PROT_READ);
 	}
+	(a->cap) = (a->cap) * 2;
 };
 
 arena_alloc ::= func(a : arena mut?, size : u64 -> v0? weak)
