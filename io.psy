@@ -14,7 +14,8 @@ putchar ::= func(char : u8 -> v0)
 	}
 	else
 	{
-		__error("putchar NYI on linux");
+		chr ::= char;
+		write(1, ref chr, 1);
 	}
 };
 
