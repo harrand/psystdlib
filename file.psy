@@ -275,6 +275,18 @@ directory_iterate ::= func(path : u8?, callback : func(path : u8? -> v0), a : ar
 	}
 };
 
+
+static if(_win32)
+{
+	GetCurrentDirectoryA ::= func(nBufferLength : u32, lpBuffer : u8 mut? -> u32) := extern;
+	SetCurrentDirectoryA ::= func(lpPathName : u8? -> s32 ):= extern;
+}
+else
+{
+	getcwd ::= func(buf : u8?, size : u64 -> u8?) := extern;
+	chdir ::= func(path : u8? -> s32) := extern;
+}
+
 directory_get_cwd ::= func(dirname : u8? mut?, dirname_len : u64 mut? -> v0)
 {
 	static if(_win32)
