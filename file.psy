@@ -93,6 +93,15 @@ else
 		st_ctim : timespec;
 	};
 
+	dirent ::= struct
+	{
+		d_ino : u64;
+		d_off : s32;
+		d_reclen : u16;
+		d_type : u16;
+		d_name : u8[256];
+	};
+
 	stat ::= func(path : u8?, statbuf : stat_t mut? -> s32) := extern;
 	access ::= func(path : u8?, mode : s32 -> s32) := extern;
 	F_OK ::= 0;
@@ -104,6 +113,13 @@ else
 	read ::= func(fd : s32, buf : u8 mut?, count : u64 -> s64) := extern;
 	close ::= func(fd : s32 -> s32) := extern;
 	write ::= func(fd : s32, buf : u8?, count : u64 -> s64) := extern;
+	unlink ::= func(path : u8? -> s32) := extern;
+	mkdir ::= func(path : u8?, mode : u32 -> s32) := extern;
+	opendir ::= func(name : u8? -> v0?) := extern;
+	closedir ::= func(dirp : v0? -> s32) := extern;
+
+	readdir ::= func(dirp : v0? -> dirent?) := extern;
+	rmdir ::= func(path : u8? -> s32) := extern;
 }
 
 file_exists ::= func(path_zstr : u8? -> bool)
@@ -220,7 +236,14 @@ file_create ::= func(path : u8? -> bool)
 	}
 	else
 	{
-		__error("file_create NYI on linux");
+
+		fd ::= open(path, O_WRONLY | O_CREAT | O_TRUNC, 420);
+		if(fd < 0)
+		{
+			return false;
+		}
+		close(fd);
+		return true;
 	}
 };
 
@@ -232,7 +255,7 @@ file_delete ::= func(path : u8? -> bool)
 	}
 	else
 	{
-		__error("file_delete NYI on linux");
+		return unlink(path) == 0;
 	}
 };
 
@@ -244,7 +267,7 @@ directory_create ::= func(path : u8? -> bool)
 	}
 	else
 	{
-		__error("directory_create NYI on linux");
+		return mkdir(path, 511) == 0;
 	}
 };
 
@@ -276,7 +299,44 @@ directory_delete ::= func(path : u8?, a : arena mut? -> bool)
 	}
 	else
 	{
-		__error("directory_delete NYI on linux");
+		pathlen ::= zstrlen(path);
+		dir ::= opendir(path);
+		if(dir == zero)
+		{
+			return false;
+		}
+		defer closedir(dir);
+		entry : dirent? mut := readdir(dir);
+		while(entry != zero)
+		{
+			name ::= entry->d_name;
+			if(!streql_n(name # 0, ".", 1) && !streql_n(name # 0, "..", 2))
+			{
+				entry_path_len ::= pathlen + 1 + zstrlen(name # 0);
+				entry_path : u8 mut? := arena_alloc(a, entry_path_len + 1);
+				memcopy(entry_path, path, pathlen);
+				deref(entry_path # pathlen) = '/';
+				memcopy(entry_path # (pathlen + 1), name # 0, zstrlen(name # 0));
+
+				stat_buf : stat_t mut;
+				stat(entry_path, ref stat_buf);
+				S_IFMT ::= 0xF0000;
+				S_IFDIR ::= 0x40000;
+				if((stat_buf.st_mode & S_IFMT) == S_IFDIR)
+				{
+					if(!directory_delete(entry_path, a))
+					{
+						return false;
+					}
+				}
+				else
+				{
+					unlink(entry_path);
+				}
+			}
+			entry = readdir(dir);
+		}
+		return rmdir(path) == 0;
 	}
 };
 
@@ -321,7 +381,21 @@ directory_iterate ::= func(path : u8?, callback : func(path : u8? -> v0), a : ar
 	}
 	else
 	{
-		__error("directory_delete NYI on linux");
+		dirp ::= opendir(path);
+		if(dirp == zero)
+		{
+			return;
+		}
+		entry : dirent? mut := readdir(dirp);
+		while(entry != zero)
+		{
+			name ::= entry->d_name;
+			if(!streql_n(name # 0, ".", 1) && !streql_n(name # 0, "..", 2))
+			{
+				callback(name # 0);
+			}
+			entry = readdir(dirp);
+		}
 	}
 };
 
