@@ -96,6 +96,14 @@ else
 	stat ::= func(path : u8?, statbuf : stat_t mut? -> s32) := extern;
 	access ::= func(path : u8?, mode : s32 -> s32) := extern;
 	F_OK ::= 0;
+	open ::= func(path : u8?, flags : s32, mode : u32 -> s32) := extern;
+	O_RDONLY ::= 0;
+	O_WRONLY ::= 1;
+	O_CREAT ::= 64;
+	O_TRUNC ::= 512;
+	read ::= func(fd : s32, buf : u8 mut?, count : u64 -> s64) := extern;
+	close ::= func(fd : s32 -> s32) := extern;
+	write ::= func(fd : s32, buf : u8?, count : u64 -> s64) := extern;
 }
 
 file_exists ::= func(path_zstr : u8? -> bool)
@@ -161,7 +169,14 @@ file_read ::= func(path : u8?, buf : u8 mut?, buflen : u64 -> v0)
 	}
 	else
 	{
-		__error("file_read NYI on linux");
+		fd ::= open(path, O_RDONLY, 0);
+		defer close(fd);
+		if(fd < 0)
+		{
+			// bad
+			return;
+		}
+		read(fd, buf, buflen);
 	}
 };
 
@@ -180,7 +195,14 @@ file_write ::= func(path : u8?, buf : u8?, buflen : u64 -> v0)
 	}
 	else
 	{
-		__error("file_write NYI on linux");
+		fd ::= open(path, O_WRONLY | O_CREAT | O_TRUNC, 420);
+		defer close(fd);
+		if(fd < 0)
+		{
+			return;
+		}
+
+		write(fd, buf, buflen);
 	}
 };
 
