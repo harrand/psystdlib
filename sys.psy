@@ -45,7 +45,7 @@ else
 	waitpid ::= func(pid : s32, status : s32 mut?, options : s32 -> s32) := extern;
 }
 
-sys_command_impl ::= func(cmd : u8? -> v0)
+sys_command_impl ::= func(cmd : u8? -> bool)
 {
 	static if(_win32)
 	{
@@ -61,33 +61,20 @@ sys_command_impl ::= func(cmd : u8? -> v0)
 
 		if(CreateProcessA(zero, cmd, zero, zero, true@s32, 0, zero, zero, ref si, ref pinfo) == 0)
 		{
-			psyc_error_begin(zero);
-			putzstr("Failed to invoke process for command: ");
-			putchar(10);
-			putzstr(cmd);
-			psyc_diag_end();
-			psyc_exit_failure();
+			return false;
 		}
 		WaitForSingleObject(pinfo.hProcess, -1);
 		exit_code : u32 mut := 0;
 		GetExitCodeProcess(pinfo.hProcess, ref exit_code);
 		if(exit_code != 0)
 		{
-			psyc_error_begin(zero);
-			putzstr("Detected non-zero return code ");
-			putchar('"');
-			putuint(exit_code);
-			putchar('"');
-			putzstr(" from the command: ");
-			putchar(10);
-			putzstr(cmd);
-			psyc_diag_end();
-			psyc_exit_failure();
+			return false;
 		}
+		return true;
 	}
 };
 
-sys_shell_command ::= func(cmd : u8?, cmdlen : u64, a : arena mut? -> v0)
+sys_shell_command ::= func(cmd : u8?, cmdlen : u64, a : arena mut? -> bool)
 {
 	static if(_win32)
 	{
@@ -96,7 +83,7 @@ sys_shell_command ::= func(cmd : u8?, cmdlen : u64, a : arena mut? -> v0)
 		memcopy(fullcmd, precmd, zstrlen(precmd));
 		memcopy(fullcmd # 11, cmd, cmdlen);
 		deref(fullcmd # (11 + cmdlen)) = 0;
-		sys_command_impl(fullcmd);
+		return sys_command_impl(fullcmd);
 	}
 	else
 	{
@@ -108,20 +95,14 @@ sys_shell_command ::= func(cmd : u8?, cmdlen : u64, a : arena mut? -> v0)
 			shell_argv ::= u8?[4]{"sh"; "-c"; cmd_zstr; zero;};
 			envp ::= u8?[1]{zero;};
 			execve("/bin/sh", argv # 0, envp # 0);
-			__debugbreak();
+			return false;
 		}
 		else
 		{
 			if(pid < 0)
 			{
 				// fork failed :(
-				psyc_error_begin(zero);
-				putzstr("failed to execute command ");
-				putchar('"');
-				putbytes(cmd, cmdlen);
-				putchar('"');
-				psyc_diag_end();
-				psyc_exit_failure();
+				return false;
 			}
 			else
 			{
@@ -132,7 +113,7 @@ sys_shell_command ::= func(cmd : u8?, cmdlen : u64, a : arena mut? -> v0)
 				// but cba lmaooo
 			}
 		}
-
+		return true;
 	}
 };
 
