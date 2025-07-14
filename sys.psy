@@ -45,9 +45,9 @@ else
 	waitpid ::= func(pid : s32, status : s32 mut?, options : s32 -> s32) := extern;
 }
 
-sys_command_impl ::= func(cmd : u8? -> bool)
+static if(_win32)
 {
-	static if(_win32)
+	sys_command_impl_win32 ::= func(cmd : u8? -> bool)
 	{
 		si : STARTUPINFOA mut := zero;
 		pinfo : PROCESS_INFORMATION mut := zero;
@@ -71,8 +71,8 @@ sys_command_impl ::= func(cmd : u8? -> bool)
 			return false;
 		}
 		return true;
-	}
-};
+	};
+}
 
 sys_shell_command ::= func(cmd : u8?, cmdlen : u64, a : arena mut? -> bool)
 {
@@ -83,7 +83,7 @@ sys_shell_command ::= func(cmd : u8?, cmdlen : u64, a : arena mut? -> bool)
 		memcopy(fullcmd, precmd, zstrlen(precmd));
 		memcopy(fullcmd # 11, cmd, cmdlen);
 		deref(fullcmd # (11 + cmdlen)) = 0;
-		return sys_command_impl(fullcmd);
+		return sys_command_impl_win32(fullcmd);
 	}
 	else
 	{
