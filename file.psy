@@ -385,20 +385,15 @@ directory_iterate ::= func(path : u8?, callback : func(path : u8? -> v0), a : ar
 	}
 	else
 	{
-		putzstr("dir iter: ");
-		putzstr(path);
 		dirp ::= opendir(path);
 		if(dirp == zero)
 		{
-			putzstr("rip");
 			return;
 		}
 		entry : dirent? mut := readdir(dirp);
 		while(entry != zero)
 		{
 			name ::= entry->d_name;
-			putzstr(name # 0);
-			putchar(10);
 			if(!streql_n(name # 0, ".", 1) && !streql_n(name # 0, "..", 2))
 			{
 				callback(name # 0);

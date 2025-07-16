@@ -130,11 +130,7 @@ sys_shell_command ::= func(cmd : u8?, cmdlen : u64, a : arena mut? -> bool)
 						putzstr("non-zero exit code: ");
 						putuint(WEXITSTATUS(status));
 						putchar(10);
-						__debugbreak();
-					}
-					else
-					{
-						putzstr("child exited successfully");
+						return false;
 					}
 				}
 				else
@@ -143,7 +139,7 @@ sys_shell_command ::= func(cmd : u8?, cmdlen : u64, a : arena mut? -> bool)
 					{
 						putzstr("child killed by some signal");
 						putchar(10);
-						__debugbreak();
+						return false;
 					}
 				}
 			}
