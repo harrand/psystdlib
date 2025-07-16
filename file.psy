@@ -89,16 +89,19 @@ else
 		st_blocks : s64;
 
 		st_atim : timespec;
+		pad0 : u32;
 		st_mtim : timespec;
+		pad1 : u32;
 		st_ctim : timespec;
+		pad2 : u32;
 	};
 
 	dirent ::= struct
 	{
 		d_ino : u64;
-		d_off : s32;
+		d_off : s64;
 		d_reclen : u16;
-		d_type : u16;
+		d_type : u8;
 		d_name : u8[256];
 	};
 
@@ -166,7 +169,8 @@ file_size_bytes ::= func(path : u8? -> u64)
 	{
 		sb : stat_t mut;
 		stat(path, ref sb);
-		return sb.st_size@_;
+		ret : u64 weak := sb.st_size;
+		return ret;
 	}
 };
 
@@ -381,15 +385,20 @@ directory_iterate ::= func(path : u8?, callback : func(path : u8? -> v0), a : ar
 	}
 	else
 	{
+		putzstr("dir iter: ");
+		putzstr(path);
 		dirp ::= opendir(path);
 		if(dirp == zero)
 		{
+			putzstr("rip");
 			return;
 		}
 		entry : dirent? mut := readdir(dirp);
 		while(entry != zero)
 		{
 			name ::= entry->d_name;
+			putzstr(name # 0);
+			putchar(10);
 			if(!streql_n(name # 0, ".", 1) && !streql_n(name # 0, "..", 2))
 			{
 				callback(name # 0);

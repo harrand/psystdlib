@@ -43,6 +43,22 @@ else
 	fork ::= func( -> s32) := extern;
 	execve ::= func(pathname : u8?, argv : u8??, envp : u8?? -> s32) := extern;
 	waitpid ::= func(pid : s32, status : s32 mut?, options : s32 -> s32) := extern;
+
+	WIFEXITED ::= func(status : s32 -> bool)
+	{
+		return (status & 0x7F) == zero;
+	};
+
+	WEXITSTATUS ::= func(status : s32 -> s32)
+	{
+		return (status >> 8) & 0xFF;
+	};
+
+	WIFSIGNALLED ::= func(status : s32 -> bool)
+	{
+		st ::= status & 0x7F;
+		return (st != zero) || (((st + 1) >> 1) > 0);
+	};
 }
 
 static if(_win32)
@@ -93,9 +109,7 @@ sys_shell_command ::= func(cmd : u8?, cmdlen : u64, a : arena mut? -> bool)
 		{
 			// child
 			shell_argv ::= u8?[4]{"sh"; "-c"; cmd_zstr; zero;};
-			envp ::= u8?[1]{zero;};
-			execve("/bin/sh", argv # 0, envp # 0);
-			return false;
+			execve("/bin/sh", shell_argv # 0, envp);
 		}
 		else
 		{
@@ -109,8 +123,29 @@ sys_shell_command ::= func(cmd : u8?, cmdlen : u64, a : arena mut? -> bool)
 				// parent
 				status : s32 mut := zero;
 				waitpid(pid, ref status, 0);
-				// in theory do some error checking
-				// but cba lmaooo
+				if(WIFEXITED(status))
+				{
+					if(WEXITSTATUS(status) != 0)
+					{
+						putzstr("non-zero exit code: ");
+						putuint(WEXITSTATUS(status));
+						putchar(10);
+						__debugbreak();
+					}
+					else
+					{
+						putzstr("child exited successfully");
+					}
+				}
+				else
+				{
+					if(WIFSIGNALLED(status))
+					{
+						putzstr("child killed by some signal");
+						putchar(10);
+						__debugbreak();
+					}
+				}
 			}
 		}
 		return true;
