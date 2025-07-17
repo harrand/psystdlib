@@ -90,7 +90,7 @@ static if(_win32)
 	};
 }
 
-sys_shell_command ::= func(cmd : u8?, cmdlen : u64, a : arena mut? -> bool)
+sys_shell_command ::= func(cmd : u8?, cmdlen : u64, ienvp : u8??, a : arena mut? -> bool)
 {
 	static if(_win32)
 	{
@@ -109,7 +109,7 @@ sys_shell_command ::= func(cmd : u8?, cmdlen : u64, a : arena mut? -> bool)
 		{
 			// child
 			shell_argv ::= u8?[4]{"sh"; "-c"; cmd_zstr; zero;};
-			execve("/bin/sh", shell_argv # 0, envp);
+			execve("/bin/sh", shell_argv # 0, ienvp);
 		}
 		else
 		{
