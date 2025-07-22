@@ -1,0 +1,44 @@
+syscall ::= enum
+{
+	.read := 0;
+	.write := 1;
+	.open := 2;
+	.close := 3;
+	.stat := 4;
+	.fstat := 5;
+
+	.mmap := 9;
+	.mprotect := 10;
+	.munmap := 11;
+
+	.access := 21;
+
+	.execve := 59;
+	.exit := 60;
+
+	.mkdir := 83;
+	.unlink := 87;
+
+	.clock_gettime := 228;
+};
+
+syscall0 ::= asm(num : u64 -> u64) :=
+"syscall" : "{rax}";
+
+syscall1 ::= asm(num : u64, arg0 : u64 -> u64) :=
+"syscall" : "{rax},{rdi}";
+
+syscall2 ::= asm(num : u64, arg0 : u64, arg1 : u64 -> u64) :=
+"syscall" : "{rax},{rdi},{rsi}";
+
+syscall3 ::= asm(num : u64, arg0 : u64, arg1 : u64, arg2 : u64 -> u64) :=
+"syscall" : "{rax},{rdi},{rsi},{rdx}";
+
+syscall4 ::= asm(num : u64, arg0 : u64, arg1 : u64, arg2 : u64, arg3 : u64 -> u64) :=
+"syscall" : "{rax},{rdi},{rsi},{rdx},{r10}";
+
+syscall5 ::= asm(num : u64, arg0 : u64, arg1 : u64, arg2 : u64, arg3 : u64, arg4 : u64 -> u64) :=
+"syscall" : "{rax},{rdi},{rsi},{rdx},{r10},{r8}";
+
+syscall6 ::= asm(num : u64, arg0 : u64, arg1 : u64, arg2 : u64, arg3 : u64, arg4 : u64, arg5 : u64 -> u64) :=
+"syscall" : "{rax},{rdi},{rsi},{rdx},{r10},{r8},{r9}";
