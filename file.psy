@@ -115,7 +115,7 @@ else
 	O_TRUNC ::= 512;
 	read ::= func(fd : s32, buf : u8 mut?, count : u64 -> s64) := extern;
 	close ::= func(fd : s32 -> s32) := extern;
-	write ::= func(fd : s32, buf : u8?, count : u64 -> s64) := extern;
+	//write ::= func(fd : s32, buf : u8?, count : u64 -> s64) := extern;
 	unlink ::= func(path : u8? -> s32) := extern;
 	mkdir ::= func(path : u8?, mode : u32 -> s32) := extern;
 	opendir ::= func(name : u8? -> v0?) := extern;
