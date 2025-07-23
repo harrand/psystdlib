@@ -105,19 +105,13 @@ else
 		d_name : u8[256];
 	};
 
-	stat ::= func(path : u8?, statbuf : stat_t mut? -> s32) := extern;
-	access ::= func(path : u8?, mode : s32 -> s32) := extern;
+	//stat ::= func(path : u8?, statbuf : stat_t mut? -> s32) := extern;
+	//access ::= func(path : u8?, mode : s32 -> s32) := extern;
 	F_OK ::= 0;
-	open ::= func(path : u8?, flags : s32, mode : u32 -> s32) := extern;
 	O_RDONLY ::= 0;
 	O_WRONLY ::= 1;
 	O_CREAT ::= 64;
 	O_TRUNC ::= 512;
-	read ::= func(fd : s32, buf : u8 mut?, count : u64 -> s64) := extern;
-	close ::= func(fd : s32 -> s32) := extern;
-	//write ::= func(fd : s32, buf : u8?, count : u64 -> s64) := extern;
-	unlink ::= func(path : u8? -> s32) := extern;
-	mkdir ::= func(path : u8?, mode : u32 -> s32) := extern;
 	opendir ::= func(name : u8? -> v0?) := extern;
 	closedir ::= func(dirp : v0? -> s32) := extern;
 

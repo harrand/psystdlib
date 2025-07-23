@@ -17,9 +17,6 @@ static if(_win32)
 }
 else
 {
-	mmap ::= func(addr : v0? weak, length : u64, prot : s32, flags : s32, fd : s32, offset : s64 -> v0? weak) := extern;
-	munmap ::= func(addr : v0? weak, length : u64 -> s32) := extern;
-	mprotect ::= func(addr : v0? weak, size : u64, prot : s32 -> s32) := extern;
 	MAP_PRIVATE ::= 0x02;
 	MAP_ANONYMOUS ::= 0x20;
 	PROT_NONE ::= 0x00;

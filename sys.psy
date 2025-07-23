@@ -40,8 +40,6 @@ static if(_win32)
 }
 else
 {
-	fork ::= func( -> s32) := extern;
-	execve ::= func(pathname : u8?, argv : u8??, envp : u8?? -> s32) := extern;
 	waitpid ::= func(pid : s32, status : s32 mut?, options : s32 -> s32) := extern;
 
 	WIFEXITED ::= func(status : s32 -> bool)
