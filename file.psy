@@ -123,7 +123,6 @@ else
 	O_TRUNC ::= 512;
 	O_DIRECTORY ::= 65536;
 	O_CLOEXEC ::= 524288;
-	rmdir ::= func(path : u8? -> s32) := extern;
 }
 
 file_exists ::= func(path_zstr : u8? -> bool)
@@ -412,8 +411,6 @@ static if(_win32)
 }
 else
 {
-	getcwd ::= func(buf : u8?, size : u64 -> u8?) := extern;
-	chdir ::= func(path : u8? -> s32) := extern;
 }
 
 directory_get_cwd ::= func(dirname : u8? mut?, dirname_len : u64 mut?, a : arena mut? -> v0)
@@ -426,8 +423,9 @@ directory_get_cwd ::= func(dirname : u8? mut?, dirname_len : u64 mut?, a : arena
 	}
 	else
 	{
-		// note: this leaks as we dont use free()
-		deref(dirname) = getcwd(zero, 0);
+		PATH_MAX ::= 4096;
+		deref(dirname) = arena_alloc(a, PATH_MAX);
+		getcwd(deref dirname, PATH_MAX);
 		deref(dirname_len) = (zstrlen(deref dirname)@_);
 	}
 };

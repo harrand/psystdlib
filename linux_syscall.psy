@@ -18,11 +18,14 @@ static if(_linux)
 		.fork := 57;
 		.execve := 59;
 		.exit := 60;
+		.wait4 := 61;
 
 		.getdents := 78;
+		.getcwd := 79;
+		.chdir := 80;
 		.mkdir := 83;
+		.rmdir := 83;
 		.unlink := 87;
-
 		.clock_gettime := 228;
 	};
 
@@ -107,14 +110,39 @@ static if(_linux)
 		return syscall3(syscall.execve@s64, pathname, iargv, ienvp);
 	};
 
+	wait4 ::= func(pid : s32, status : s32 mut?, options : s32, usage : v0? -> s32)
+	{
+		return syscall4(syscall.wait4@s64, pid, status, options, usage);
+	};
+
 	mkdir ::= func(path : u8?, mode : u32 -> s32)
 	{
 		return syscall2(syscall.mkdir@s64, path, mode);
 	};
 
+	rmdir ::= func(path : u8? -> s32)
+	{
+		return syscall1(syscall.rmdir@s64, path);
+	};
+
 	getdents ::= func(fd : s32, dirent : dirent?, count : u32 -> s64)
 	{
 		return syscall3(syscall.getdents@s64, fd, dirent, count);
+	};
+
+	getcwd ::= func(buf : u8 mut?, size : u64 -> u64)
+	{
+		return syscall2(syscall.getcwd@s64, buf, size);
+	};
+
+	chdir ::= func(path : u8? -> s32)
+	{
+		return syscall1(syscall.chdir@s64, path);
+	};
+
+	clock_gettime ::= func(clk_id : s32, tp : timespec mut? -> s32)
+	{
+		return syscall2(syscall.clock_gettime@s64, clk_id, tp);
 	};
 
 	opendir ::= func(name : u8?, a : arena mut? -> DIR?)
@@ -149,5 +177,10 @@ static if(_linux)
 	{
 		// its allocated from an arena...
 		return 0;
+	};
+
+	waitpid ::= func(pid : s32, status : s32?, options : s32 -> s32)
+	{
+		return wait4(pid, status, options, zero);
 	};
 }

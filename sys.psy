@@ -40,8 +40,6 @@ static if(_win32)
 }
 else
 {
-	waitpid ::= func(pid : s32, status : s32 mut?, options : s32 -> s32) := extern;
-
 	WIFEXITED ::= func(status : s32 -> bool)
 	{
 		return (status & 0x7F) == zero;
