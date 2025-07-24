@@ -263,6 +263,37 @@ file_delete ::= func(path : u8? -> bool)
 	}
 };
 
+directory_exists ::= func(path : u8? -> bool)
+{
+	static if(_win32)
+	{
+		attr ::= GetFileAttributesA(path);
+		if(attr == 0xffffffff)
+		{
+			return false;
+		}
+		if((attr & 16) != zero)
+		{
+			return true;
+		}
+		return false;
+	}
+	else
+	{
+		if(access(path, F_OK) != 0)
+		{
+			return false;
+		}
+		dir : DIR mut;
+		if(!opendir(path, ref dir))
+		{
+			return false;
+		}
+		closedir(ref dir);
+		return true;
+	}
+};
+
 directory_create ::= func(path : u8? -> bool)
 {
 	static if(_win32)
@@ -304,13 +335,13 @@ directory_delete ::= func(path : u8?, a : arena mut? -> bool)
 	else
 	{
 		pathlen ::= zstrlen(path);
-		dir ::= opendir(path, a);
-		if(dir == zero)
+		dir : DIR mut;
+		if(!opendir(path, ref dir))
 		{
 			return false;
 		}
-		defer closedir(dir);
-		entry : dirent? mut := readdir(dir);
+		defer closedir(ref dir);
+		entry : dirent? mut := readdir(ref dir);
 		while(entry != zero)
 		{
 			name ::= entry->d_name;
@@ -338,7 +369,7 @@ directory_delete ::= func(path : u8?, a : arena mut? -> bool)
 					unlink(entry_path);
 				}
 			}
-			entry = readdir(dir);
+			entry = readdir(ref dir);
 		}
 		return rmdir(path) == 0;
 	}
@@ -385,12 +416,13 @@ directory_iterate ::= func(path : u8?, callback : func(path : u8? -> v0), a : ar
 	}
 	else
 	{
-		dirp ::= opendir(path, a);
-		if(dirp == zero)
+		dir : DIR mut;
+		if(!opendir(path, ref dir))
 		{
 			return;
 		}
-		entry : dirent? mut := readdir(dirp);
+		defer closedir(ref dir);
+		entry : dirent? mut := readdir(ref dir);
 		while(entry != zero)
 		{
 			name ::= entry->d_name;
@@ -398,7 +430,7 @@ directory_iterate ::= func(path : u8?, callback : func(path : u8? -> v0), a : ar
 			{
 				callback(name # 0);
 			}
-			entry = readdir(dirp);
+			entry = readdir(ref dir);
 		}
 	}
 };

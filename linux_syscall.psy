@@ -150,13 +150,16 @@ static if(_linux)
 		return syscall2(syscall.clock_gettime@s64, clk_id, tp);
 	};
 
-	opendir ::= func(name : u8?, a : arena mut? -> DIR?)
+	opendir ::= func(name : u8?, dirp : DIR mut? -> bool)
 	{
+		deref dirp = zero;
 		fd ::= open(name, O_RDONLY | O_DIRECTORY | O_CLOEXEC, zero);
-		dir : DIR mut? := arena_alloc(a, __sizeof(DIR));
-		deref dir = zero;
-		dir->fd = fd;
-		return dir;
+		if(fd < 0)
+		{
+			return false;
+		}
+		dirp->fd = fd;
+		return true;
 	};
 
 	readdir ::= func(dirp : DIR mut? -> dirent?)
