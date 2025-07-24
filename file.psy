@@ -101,8 +101,17 @@ else
 		d_ino : u64;
 		d_off : s64;
 		d_reclen : u16;
-		d_type : u8;
 		d_name : u8[256];
+	};
+
+	DIR ::= struct
+	{
+		tell : u64;
+		fd : s32;
+		buf_pos : s32;
+		buf_end : s32;
+		lock : s32[1];
+		buf : u8[2048];
 	};
 
 	//stat ::= func(path : u8?, statbuf : stat_t mut? -> s32) := extern;
@@ -112,10 +121,8 @@ else
 	O_WRONLY ::= 1;
 	O_CREAT ::= 64;
 	O_TRUNC ::= 512;
-	opendir ::= func(name : u8? -> v0?) := extern;
-	closedir ::= func(dirp : v0? -> s32) := extern;
-
-	readdir ::= func(dirp : v0? -> dirent?) := extern;
+	O_DIRECTORY ::= 65536;
+	O_CLOEXEC ::= 524288;
 	rmdir ::= func(path : u8? -> s32) := extern;
 }
 
@@ -298,7 +305,7 @@ directory_delete ::= func(path : u8?, a : arena mut? -> bool)
 	else
 	{
 		pathlen ::= zstrlen(path);
-		dir ::= opendir(path);
+		dir ::= opendir(path, a);
 		if(dir == zero)
 		{
 			return false;
@@ -379,7 +386,7 @@ directory_iterate ::= func(path : u8?, callback : func(path : u8? -> v0), a : ar
 	}
 	else
 	{
-		dirp ::= opendir(path);
+		dirp ::= opendir(path, a);
 		if(dirp == zero)
 		{
 			return;

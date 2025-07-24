@@ -19,6 +19,7 @@ static if(_linux)
 		.execve := 59;
 		.exit := 60;
 
+		.getdents := 78;
 		.mkdir := 83;
 		.unlink := 87;
 
@@ -109,5 +110,44 @@ static if(_linux)
 	mkdir ::= func(path : u8?, mode : u32 -> s32)
 	{
 		return syscall2(syscall.mkdir@s64, path, mode);
+	};
+
+	getdents ::= func(fd : s32, dirent : dirent?, count : u32 -> s64)
+	{
+		return syscall3(syscall.getdents@s64, fd, dirent, count);
+	};
+
+	opendir ::= func(name : u8?, a : arena mut? -> DIR?)
+	{
+		fd ::= open(name, O_RDONLY | O_DIRECTORY | O_CLOEXEC, zero);
+		dir : DIR mut? := arena_alloc(a, __sizeof(DIR));
+		deref dir = zero;
+		dir->fd = fd;
+		return dir;
+	};
+
+	readdir ::= func(dirp : DIR mut? -> dirent?)
+	{
+		de : dirent? mut;
+		if((dirp->buf_pos) >= (dirp->buf_end))
+		{
+			len ::= getdents(dirp->fd, (dirp->buf # 0)@dirent?, __sizeof(dirp->buf));
+			if(len <= 0)
+			{
+				return zero;
+			}
+			dirp->buf_end = len@_;
+			dirp->buf_pos = 0;
+		}
+		de = (dirp->buf # (dirp->buf_pos))@dirent?;
+		dirp->buf_pos = ((dirp->buf_pos) + (de->d_reclen@_));
+		dirp->tell = (de->d_off)@_;
+		return de;
+	};
+
+	closedir ::= func(dirp : DIR? -> s32)
+	{
+		// its allocated from an arena...
+		return 0;
 	};
 }
