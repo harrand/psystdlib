@@ -78,7 +78,7 @@ else
 		st_dev : u64;
 		st_ino : u64;
 		st_mode : u32;
-
+		mypad : u32;
 		st_nlink : u64;
 		st_uid : u32;
 		st_gid : u32;
@@ -94,6 +94,9 @@ else
 		pad1 : u32;
 		st_ctim : timespec;
 		pad2 : u32;
+
+		pad3 : u64;
+		pad4 : u64;
 	};
 
 	dirent ::= struct

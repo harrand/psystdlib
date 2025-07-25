@@ -30,25 +30,25 @@ static if(_linux)
 	};
 
 	syscall0 ::= asm(num : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0';
+	'syscall' : '={rax},0,~{rcx},~{r11},~{memory}';
 
 	syscall1 ::= asm(num : u64 weak, arg0 : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0,{rdi}';
+	'syscall' : '={rax},0,{rdi},~{rcx},~{r11},~{memory}';
 
 	syscall2 ::= asm(num : u64 weak, arg0 : u64 weak, arg1 : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0,{rdi},{rsi}';
+	'syscall' : '={rax},0,{rdi},{rsi},~{rcx},~{r11},~{memory}';
 
 	syscall3 ::= asm(num : u64 weak, arg0 : u64 weak, arg1 : u64 weak, arg2 : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0,{rdi},{rsi},{rdx}';
+	'syscall' : '={rax},0,{rdi},{rsi},{rdx},~{rcx},~{r11},~{memory}';
 
 	syscall4 ::= asm(num : u64 weak, arg0 : u64 weak, arg1 : u64 weak, arg2 : u64 weak, arg3 : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0,{rdi},{rsi},{rdx},{r10}';
+	'syscall' : '={rax},0,{rdi},{rsi},{rdx},{r10},~{rcx},~{r11},~{memory}';
 
 	syscall5 ::= asm(num : u64 weak, arg0 : u64 weak, arg1 : u64 weak, arg2 : u64 weak, arg3 : u64 weak, arg4 : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0,{rdi},{rsi},{rdx},{r10},{r8}';
+	'syscall' : '={rax},0,{rdi},{rsi},{rdx},{r10},{r8},~{rcx},~{r11},~{memory}';
 
 	syscall6 ::= asm(num : u64 weak, arg0 : u64 weak, arg1 : u64 weak, arg2 : u64 weak, arg3 : u64 weak, arg4 : u64 weak, arg5 : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0,{rdi},{rsi},{rdx},{r10},{r8},{r9}';
+	'syscall' : '={rax},0,{rdi},{rsi},{rdx},{r10},{r8},{r9},~{rcx},~{r11},~{memory}';
 
 	read ::= func(fd : s32, buf : u8 mut?, count : u64 -> s64)
 	{
