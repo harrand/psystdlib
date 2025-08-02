@@ -45,51 +45,9 @@ sin_maclaurin ::= func(x : f64, terms : u64 -> f64)
 	return sum;
 };
 
-sin ::= func(v : f64 -> f64)
+sin ::= func(v : f64 weak -> f64 weak)
 {
-	x : f64 mut := v;
-	// Reduce to x E [0, tau)
-	turns ::= floor(x / tau);
-	x = (x - turns * tau);
-
-	// Map to x E [-pi, pi]
-	if (x > pi)
-	{
-		x = x - tau;
-	}
-
-	// Reflect to x E [-pi/2, pi/2] using sin(x) = sin(pi - x), sin(-x) = -sin(x)
-	negate : bool mut := false;
-
-	if (x > pihalf)
-	{
-		x = pi - x;
-	}
-	else
-	{
-		if (x < -pihalf)
-		{
-			x = -pi - x;
-			negate = true;
-		}
-	}
-
-	// Fast path for very small x
-	if ((x < 0.05) && (x > -0.05))
-	{
-		if(negate)
-		{
-			return -x;
-		}
-		return x;
-	}
-
-	result ::= sin_maclaurin(x, 10);
-	if(negate)
-	{
-		return -result;
-	}
-	return result;
+	return sin_maclaurin(v, 10);
 };
 
 cos_maclaurin ::= func(x : f64, terms : u64 -> f64)
@@ -105,47 +63,9 @@ cos_maclaurin ::= func(x : f64, terms : u64 -> f64)
 	return sum;
 };
 
-cos ::= func(v : f64 -> f64)
+cos ::= func(v : f64 weak -> f64 weak)
 {
-	x : f64 mut := v;
-	// Range reduce: x E [0, tau)
-	turns ::= floor(x / tau);
-	x = x - turns * tau;
-
-	// Reflect to x E [-pi, pi]
-	if (x > pi)
-	{
-		x = x - tau;
-	}
-
-	// Reflect to x E [-pi/2, pi/2]
-	negate : bool mut := false;
-
-	if (x > pihalf)
-	{
-		x = pi - x;
-		negate = true;
-	}
-	else
-	{
-		if (x < -pihalf)
-		{
-			x = -pi - x;
-			negate = true;
-		}
-	}
-
-	if ((x < 0.05) && (x > -0.05))
-	{
-		return 1.0;
-	}
-
-	result ::= cos_maclaurin(x, 10);
-	if(negate)
-	{
-		return -result;
-	}
-	return result;
+	return cos_maclaurin(v, 10);
 };
 
 tan ::= func(f : f64 -> f64)
