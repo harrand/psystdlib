@@ -5,18 +5,21 @@ static if(_win32)
 	//WriteFile ::= func(hFile : u64, lpBuffer : u8?, nNumberOfBytesToWrite : u32, chars_written : u32 mut? weak, lpOverlapped : v0? -> s32) := extern;
 }
 
-putchar ::= func(char : u8 -> v0)
+putbytes ::= func(chars : u8?, count : u64 -> v0)
 {
 	static if(_win32)
 	{
-		chr ::= char;
-		WriteFile(GetStdHandle(4294967285@u32), ref chr, 1@u32, zero, zero);
+		WriteFile(GetStdHandle(4294967285@u32), chars, count@u32, zero, zero);
 	}
 	else
 	{
-		chr ::= char;
-		write(1, ref chr, 1);
+		write(1, chars, count);
 	}
+};
+
+putchar ::= func(char : u8 -> v0)
+{
+	putbytes(ref char, 1);
 };
 
 putuint ::= func(i : u64 weak -> v0)
@@ -67,23 +70,16 @@ putfloat ::= func(f: f64 weak -> v0)
 	putuint(decimal_part);
 };
 
-putbytes ::= func(ptr : u8?, len : u64 -> v0)
-{
-	i : u64 mut;
-	for(i = 0, i < len, i = i + 1)
-	{
-		putchar(deref (ptr # i));
-	}
-};
-
 putzstr ::= func(zstr : u8? -> v0)
 {
+	count : u64 mut := 0;
 	s : u8? mut := zstr;
 	while(deref(s) != 0)
 	{
-		putchar(deref s);
+		count = count + 1;
 		s = s # 1;
 	}
+	putbytes(zstr, count);
 };
 
 putloc ::= func(loc : srcloc -> v0)

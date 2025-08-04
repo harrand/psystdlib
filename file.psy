@@ -117,8 +117,6 @@ else
 		buf : u8[2048];
 	};
 
-	//stat ::= func(path : u8?, statbuf : stat_t mut? -> s32) := extern;
-	//access ::= func(path : u8?, mode : s32 -> s32) := extern;
 	F_OK ::= 0;
 	O_RDONLY ::= 0;
 	O_WRONLY ::= 1;
