@@ -19,7 +19,8 @@ putbytes ::= func(chars : u8?, count : u64 -> v0)
 
 putchar ::= func(char : u8 -> v0)
 {
-	putbytes(ref char, 1);
+	chr ::= char;
+	putbytes(ref chr, 1);
 };
 
 putuint ::= func(i : u64 weak -> v0)
