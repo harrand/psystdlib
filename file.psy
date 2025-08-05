@@ -480,3 +480,20 @@ directory_set_cwd ::= func(dirname : u8?, dirname_len : u64, a : arena mut? -> v
 	zstr ::= sstr2zstr(dirname, dirname_len, a);
 	directory_set_cwdz(zstr);
 };
+
+path_get_parent_len ::= func(path : u8?, len : u64 -> u64)
+{
+	if(len <= 1)
+	{
+		return len;
+	}
+	i : s64 mut weak;
+	for(i = (len - 2), i >= 0, i = i - 1)
+	{
+		if(deref(path#i) == '/')
+		{
+			return i;
+		}
+	}
+	return len;
+};
