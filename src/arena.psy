@@ -3,6 +3,7 @@ arena ::= struct
 	ptr : v0?;
 	cap : u64;
 	cur : u64;
+	auto_align : u64;
 };
 
 ARENA_ADDR_RESERVE ::= 8000000000;
@@ -36,6 +37,7 @@ arena_create ::= func(initial_cap : u64 -> arena)
 			.ptr := ptr;
 			.cap := initial_cap;
 			.cur := 0;
+			.auto_align := 1;
 		};
 	}
 	else
@@ -50,6 +52,7 @@ arena_create ::= func(initial_cap : u64 -> arena)
 			.ptr := ptr;
 			.cap := initial_cap;
 			.cur := 0;
+			.auto_align := 1;
 		};
 	}
 
@@ -96,9 +99,23 @@ arena_alloc ::= func(a : arena mut?, size : u64 -> v0? weak)
 	}
 
 	addr ::= (a->ptr)@u64 mut;
+	arena_align(a, a->auto_align);
 	addr = addr + (a->cur);
 	(a->cur) = (a->cur) + size;
 	return addr@_;
+};
+
+arena_align ::= func(a : arena mut?, align : u64 -> u64)
+{
+	addr ::= (a->ptr)@u64 + (a->cur);
+	padding ::= (-addr) & (align - 1);
+	(a->cur) = (a->cur) + padding;
+	return padding;
+};
+
+arena_auto_align ::= func(a : arena mut?, align : u64 -> v0)
+{
+	a->auto_align = align;
 };
 
 arena_clear ::= func(a : arena mut? -> v0)
