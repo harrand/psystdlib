@@ -104,7 +104,7 @@ arena_destroy ::= func(a : arena mut? -> v0)
 		}
 		else
 		{
-			munmap(a->ptr, a->reserve_bytes);
+			munmap(a->ptr, a->reserve);
 		}
 	}
 	deref a = zero;
