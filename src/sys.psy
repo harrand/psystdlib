@@ -59,7 +59,7 @@ else
 
 static if(_win32)
 {
-	sys_command_impl_win32 ::= func(cmd : u8? -> bool)
+	sys_command_impl_win32 ::= func(cmd : u8? -> u32)
 	{
 		si : STARTUPINFOA mut := zero;
 		pinfo : PROCESS_INFORMATION mut := zero;
@@ -78,15 +78,11 @@ static if(_win32)
 		WaitForSingleObject(pinfo.hProcess, -1);
 		exit_code : u32 mut := 0;
 		GetExitCodeProcess(pinfo.hProcess, ref exit_code);
-		if(exit_code != 0)
-		{
-			return false;
-		}
-		return true;
+		return exit_code;
 	};
 }
 
-sys_shell_command ::= func(cmd : u8?, cmdlen : u64, ienvp : u8??, a : arena mut? -> bool)
+sys_shell_command ::= func(cmd : u8?, cmdlen : u64, ienvp : u8??, a : arena mut? -> u32)
 {
 	static if(_win32)
 	{
@@ -112,7 +108,7 @@ sys_shell_command ::= func(cmd : u8?, cmdlen : u64, ienvp : u8??, a : arena mut?
 			if(pid < 0)
 			{
 				// fork failed :(
-				return false;
+				return -1;
 			}
 			else
 			{
@@ -121,21 +117,13 @@ sys_shell_command ::= func(cmd : u8?, cmdlen : u64, ienvp : u8??, a : arena mut?
 				waitpid(pid, ref status, 0);
 				if(WIFEXITED(status))
 				{
-					if(WEXITSTATUS(status) != 0)
-					{
-						putzstr("non-zero exit code: ");
-						putuint(WEXITSTATUS(status));
-						putchar(10);
-						return false;
-					}
+					return WEXITSTATUS(status)@_;
 				}
 				else
 				{
 					if(WIFSIGNALLED(status))
 					{
-						putzstr("child killed by some signal");
-						putchar(10);
-						return false;
+						return -1;
 					}
 				}
 			}
