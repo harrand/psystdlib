@@ -5,11 +5,6 @@ static if(_win32)
 }
 else
 {
-	timespec ::= struct
-	{
-		tv_sec : s64;
-		tv_nsec : s64;
-	};
 }
 
 // get the time, in microseconds
@@ -27,6 +22,6 @@ time_static ::= func(-> s64)
 	{
 		ts : timespec mut;
 		clock_gettime(1, ref ts);
-		return (ts.tv_sec * 1000000) + (ts.tv_nsec / 1000);
+		return ((ts.tv_sec * 1000000) + (ts.tv_nsec / 1000))@_;
 	}
 };
