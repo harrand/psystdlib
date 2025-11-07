@@ -19,7 +19,11 @@ free_list_push ::= func(l : free_list mut?, mem : v0? weak, len : u64 -> v0)
 		return;
 	}
 	node ::= mem@free_node mut?;
-	node->next = (l->head@_);
+	deref(node) = free_node
+	{
+		.size := len;
+		.next := l->head@_;
+	};
 	l->head = node;
 };
 
@@ -31,7 +35,7 @@ free_list_pop ::= func(l : free_list mut?, len : u64 -> v0? weak)
 	}
 	// so we have a free list with a bunch of nodes
 	cur : free_node mut? mut := l->head;
-	if(cur->size > len)
+	if(cur->size >= len)
 	{
 		// great the head is enough!
 		l->head = (cur->next@free_node mut?);
