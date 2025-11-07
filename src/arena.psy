@@ -6,6 +6,8 @@ arena ::= struct
 	cur : u64;
 	reserve : u64;
 	auto_align : u64;
+	recycling_enabled : bool;
+	recycle_bin : free_list;
 };
 
 arena_type ::= enum
@@ -54,6 +56,8 @@ arena_create_virtual_reserve ::= func(reserve_bytes : u64, initial_commit : u64 
 			.cur := 0;
 			.reserve := reserve_bytes;
 			.auto_align := 1;
+			.recycling_enabled := true;
+			.recycle_bin := zero;
 		};
 	}
 	else
@@ -71,6 +75,8 @@ arena_create_virtual_reserve ::= func(reserve_bytes : u64, initial_commit : u64 
 			.cur := 0;
 			.reserve := reserve_bytes;
 			.auto_align := 1;
+			.recycling_enabled := true;
+			.recycle_bin := zero;
 		};
 	}
 };
@@ -88,6 +94,8 @@ arena_create_preallocated ::= func(ptr : v0? weak, len : u64 -> arena)
 		.cap := len;
 		.cur := 0;
 		.auto_align := 1;
+		.recycling_enabled := true;
+		.recycle_bin := zero;
 	};
 };
 
@@ -135,6 +143,12 @@ _arena_dub ::= func(a : arena mut? -> v0)
 // return zero if we didn't have enough space
 arena_alloc ::= func(a : arena mut?, size : u64 -> v0? weak)
 {
+	freed ::= free_list_pop(ref(a->recycle_bin), size);
+	if(freed != zero)
+	{
+		return freed;
+	}
+	
 	while(((a->cur) + size) > (a->cap))
 	{
 		if(a->type == arena_type.preallocated)
@@ -149,6 +163,11 @@ arena_alloc ::= func(a : arena mut?, size : u64 -> v0? weak)
 	addr = addr + (a->cur);
 	(a->cur) = (a->cur) + size;
 	return addr@_;
+};
+
+arena_free ::= func(a : arena mut?, ptr : v0? weak, size : u64 -> v0)
+{
+	free_list_push(ref(a->recycle_bin), ptr, size);
 };
 
 // align the next allocation

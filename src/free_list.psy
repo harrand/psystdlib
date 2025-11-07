@@ -1,0 +1,95 @@
+free_node ::= struct
+{
+	size : u64;
+	next : v0?;
+};
+
+// performs memory recycling
+free_list ::= struct
+{
+	head : free_node mut?;
+};
+
+free_list_push ::= func(l : free_list mut?, mem : v0? weak, len : u64 -> v0)
+{
+	if(len < __sizeof(free_node))
+	{
+		// cant recycle super small allocations.
+		// just ignore
+		return;
+	}
+	node ::= mem@free_node mut?;
+	node->next = (l->head@_);
+	l->head = node;
+};
+
+free_list_pop ::= func(l : free_list mut?, len : u64 -> v0? weak)
+{
+	if(l->head == zero)
+	{
+		return zero;
+	}
+	// so we have a free list with a bunch of nodes
+	cur : free_node mut? mut := l->head;
+	if(cur->size > len)
+	{
+		// great the head is enough!
+		l->head = (cur->next@free_node mut?);
+		// note: we waste ((cur->size) - len) bytes - the node we just recycled might have way more memory in it than requested
+		// ideally we split the node up here but i'll leave that for later as its complex.
+		return cur;
+	}
+	while(cur != zero)
+	{
+		child ::= (cur->next)@free_node mut?;
+		if(child != zero)
+		{
+			// is this child big enough?
+			childsize ::= child->size;
+			if(childsize >= len)
+			{
+				// yes it is
+				// cur->next should point __sizeof(free_node) bytes forward
+				// and we return the initial ptr
+				// if the cutoff size is still large enough for a node then we'll split it off
+				if(childsize >= (len + __sizeof(free_node)))
+				{
+					cur->next = ((child@u8? # __sizeof(free_node))@_);
+				}
+				else
+				{
+					// ok the cutoff size is tiny let's just forget about the rest
+					cur->next = child->next;
+				}
+				return child;
+			}
+		}
+		cur = child;
+	}
+	// we hit this bit because cur is zero i.e we never found something large enough
+	return zero;
+};
+
+free_list_total_size ::= func(l : free_list? -> u64)
+{
+	cur : free_node mut? mut := l->head;
+	total : u64 mut := 0;
+	while(cur != zero)
+	{
+		total = total + (cur->size);
+	}
+	return total;
+};
+
+free_list_avg_size ::= func(l : free_list? -> u64)
+{
+	cur : free_node mut? mut := l->head;
+	total : u64 mut := 0;
+	count : u64 mut := 0;
+	while(cur != zero)
+	{
+		total = total + (cur->size);
+		count = count + 1;
+	}
+	return total / count;
+};
