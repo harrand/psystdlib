@@ -19,7 +19,11 @@ free_list_push ::= func(l : free_list mut?, mem : v0? weak, len : u64 -> v0)
 		return;
 	}
 	node ::= mem@free_node mut?;
-	node->next = (l->head@_);
+	deref(node) = free_node
+	{
+		.size := len;
+		.next := l->head@_;
+	};
 	l->head = node;
 };
 
@@ -55,6 +59,11 @@ free_list_pop ::= func(l : free_list mut?, len : u64 -> v0? weak)
 				if(childsize >= (len + __sizeof(free_node)))
 				{
 					cur->next = ((child@u8? # __sizeof(free_node))@_);
+					deref(cur->next@free_node mut?) = free_node
+					{
+						.size := childsize - __sizeof(free_node);
+						.next := child->next;
+					};
 				}
 				else
 				{
@@ -77,6 +86,7 @@ free_list_total_size ::= func(l : free_list? -> u64)
 	while(cur != zero)
 	{
 		total = total + (cur->size);
+		cur = (cur->next@_);
 	}
 	return total;
 };
@@ -90,6 +100,7 @@ free_list_avg_size ::= func(l : free_list? -> u64)
 	{
 		total = total + (cur->size);
 		count = count + 1;
+		cur = (cur->next@_);
 	}
 	return total / count;
 };
