@@ -29,6 +29,10 @@ free_list_push ::= func(l : free_list mut?, mem : v0? weak, len : u64 -> v0)
 
 free_list_pop ::= func(l : free_list mut?, len : u64 -> v0? weak)
 {
+	if(len <= __sizeof(free_node))
+	{
+		return zero;
+	}
 	cur : free_node mut? mut := l->head;
 	prev : free_node mut? mut := zero;
 	while(cur != zero)
@@ -37,19 +41,17 @@ free_list_pop ::= func(l : free_list mut?, len : u64 -> v0? weak)
 		{
 			// cur is enough
 			// let's try to split it
-			maybe_newnode ::= _free_node_split(cur, len);
-			next : free_node mut? mut weak := maybe_newnode;
-			if(next == zero)
-			{
-				next = (cur->next);
-			}
+			next : free_node mut? weak := _free_node_split(cur, len);
+			// next is either cur->next or a newly split smaller node from cur.
 			if(prev != zero)
 			{
-				prev->next = next;
+				// prev->next was cur which we just split off. set it to next.
+				(prev->next) = next;
 			}
 			else
 			{
-				l->head = next;
+				// l->head was cur which we just split off. set it to next.
+				(l->head) = next;
 			}
 			return cur;
 		}
@@ -87,23 +89,32 @@ free_list_avg_size ::= func(l : free_list? -> u64)
 
 _free_node_split ::= func(node : free_node mut?, threshold : u64 -> free_node mut?)
 {
-	// if node->size >= threshold, then split the node into two nodes and return the second
-	// if we didnt do a split, returns zero
+	// if node is large enough, then split the node into two nodes and return the second
+	// if we didnt do a split, return the original next
 	orig_size ::= node->size;
-	if(orig_size >= (threshold + __sizeof(free_node)))
+	orig_next ::= node->next;
+	if(orig_size >= (threshold + (__sizeof(free_node) * 2)))
 	{
 		// we do a split
-		node->size = threshold;
 		// offset 'threshold' bytes from the node ptr
 		// treat that as a new node ptr
-		newnode ::= (node@u8? # threshold)@free_node mut?;
+		byte_offset ::= node@u64 mut;
+		byte_offset = (byte_offset + threshold);
+		align ::= __alignof(free_node);
+		padding ::= (-byte_offset) & (align - 1);
+		byte_offset = (byte_offset + padding);
+
+		newnode ::= byte_offset@free_node mut? weak;
 		deref(newnode) = free_node
 		{
-			.size := orig_size - threshold;
-			.next := node->next;
+			.size := orig_size - (threshold + padding);
+			.next := orig_next;
 		};
-		node->next = (newnode@_);
-		return newnode;
+		// todo: uncomment this and fix a crash
+		// if you introduce this newnode into the free list things crash horribly
+		// and i have absolutely no idea why.
+		//return newnode;
+		return orig_next@_;
 	}
-	return zero;
+	return node->next@_;
 };
