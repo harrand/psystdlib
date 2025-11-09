@@ -110,11 +110,7 @@ _free_node_split ::= func(node : free_node mut?, threshold : u64 -> free_node mu
 			.size := orig_size - (threshold + padding);
 			.next := orig_next;
 		};
-		// todo: uncomment this and fix a crash
-		// if you introduce this newnode into the free list things crash horribly
-		// and i have absolutely no idea why.
-		//return newnode;
-		return orig_next@_;
+		return newnode;
 	}
 	return node->next@_;
 };
