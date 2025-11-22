@@ -84,6 +84,10 @@ free_list_avg_size ::= func(l : free_list? -> u64)
 		count = count + 1;
 		cur = (cur->next@_);
 	}
+	if(count == 0)
+	{
+		return 0;
+	}
 	return total / count;
 };
 
