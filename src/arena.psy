@@ -146,6 +146,16 @@ arena_alloc ::= func(a : arena mut?, size : u64 -> v0? weak)
 	freed ::= free_list_pop(ref(a->recycle_bin), size);
 	if(freed != zero)
 	{
+		static if(false)
+		{
+			putzstr("recycle out: ");
+			putuint(size);
+			putzstr("B");
+			putzstr(", total left: ");
+			putuint(free_list_total_size(ref(a->recycle_bin)));
+			putzstr("B");
+			putchar(10);
+		}
 		return freed;
 	}
 	
@@ -168,6 +178,15 @@ arena_alloc ::= func(a : arena mut?, size : u64 -> v0? weak)
 arena_free ::= func(a : arena mut?, ptr : v0? weak, size : u64 -> v0)
 {
 	free_list_push(ref(a->recycle_bin), ptr, size);
+	static if(false)
+	{
+		putzstr("recycle in: ");
+		putuint(size);
+		putzstr("B, total is now: ");
+		putuint(free_list_total_size(ref(a->recycle_bin)));
+		putzstr("B");
+		putchar(10);
+	}
 };
 
 // align the next allocation
