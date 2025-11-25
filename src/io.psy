@@ -23,6 +23,24 @@ putchar ::= func(char : u8 -> v0)
 	putbytes(ref chr, 1);
 };
 
+lenuint ::= func(i : u64 weak -> u64)
+{
+	if(i > 9)
+	{
+		return 1 + lenuint(i / 10);
+	}
+	return 1;
+};
+
+lensint ::= func(i : s64 weak -> u64)
+{
+	if(i < 0)
+	{
+		return 1 + lenuint(-i);
+	}
+	return lenuint(i);
+};
+
 putuint ::= func(i : u64 weak -> v0)
 {
 	if(i > 9)
