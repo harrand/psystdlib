@@ -1,16 +1,16 @@
-free_node ::= struct
+free_node : struct
 {
 	size : u64;
 	next : v0?;
 };
 
 // performs memory recycling
-free_list ::= struct
+free_list : struct
 {
 	head : free_node mut?;
 };
 
-free_list_push ::= func(l : free_list mut?, mem : v0? weak, len : u64 -> v0)
+free_list_push : func(l : free_list mut?, mem : v0? weak, len : u64 -> v0)
 {
 	if(len < __sizeof(free_node))
 	{
@@ -27,7 +27,7 @@ free_list_push ::= func(l : free_list mut?, mem : v0? weak, len : u64 -> v0)
 	l->head = node;
 };
 
-free_list_pop ::= func(l : free_list mut?, len : u64 -> v0? weak)
+free_list_pop : func(l : free_list mut?, len : u64 -> v0? weak)
 {
 	if(len <= __sizeof(free_node))
 	{
@@ -61,7 +61,7 @@ free_list_pop ::= func(l : free_list mut?, len : u64 -> v0? weak)
 	return zero;
 };
 
-free_list_total_size ::= func(l : free_list? -> u64)
+free_list_total_size : func(l : free_list? -> u64)
 {
 	cur : free_node mut? mut := l->head;
 	total : u64 mut := 0;
@@ -73,7 +73,7 @@ free_list_total_size ::= func(l : free_list? -> u64)
 	return total;
 };
 
-free_list_avg_size ::= func(l : free_list? -> u64)
+free_list_avg_size : func(l : free_list? -> u64)
 {
 	cur : free_node mut? mut := l->head;
 	total : u64 mut := 0;
@@ -91,7 +91,7 @@ free_list_avg_size ::= func(l : free_list? -> u64)
 	return total / count;
 };
 
-_free_node_split ::= func(node : free_node mut?, threshold : u64 -> free_node mut?)
+_free_node_split : func(node : free_node mut?, threshold : u64 -> free_node mut?)
 {
 	// if node is large enough, then split the node into two nodes and return the second
 	// if we didnt do a split, return the original next

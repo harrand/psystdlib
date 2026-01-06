@@ -1,6 +1,6 @@
-static if(_linux)
+static_if(_linux)
 {
-	syscall ::= enum
+	syscall : enum
 	{
 		.read := 0;
 		.write := 1;
@@ -29,130 +29,145 @@ static if(_linux)
 		.clock_gettime := 228;
 	};
 
-	syscall0 ::= asm(num : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0,~{rcx},~{r11},~{memory}';
+	syscall0 : asm("={rax},0,~{rcx},~{r11},~{memory}" -> u64 weak)
+	{
+		syscall
+	};
 
-	syscall1 ::= asm(num : u64 weak, arg0 : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0,{rdi},~{rcx},~{r11},~{memory}';
+	syscall1 : asm("={rax},0,{rdi},~{rcx},~{r11},~{memory}" -> u64 weak)
+	{
+		syscall
+	};
 
-	syscall2 ::= asm(num : u64 weak, arg0 : u64 weak, arg1 : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0,{rdi},{rsi},~{rcx},~{r11},~{memory}';
+	syscall2 : asm("={rax},0,{rdi},{rsi},~{rcx},~{r11},~{memory}" -> u64 weak)
+	{
+		syscall
+	};
 
-	syscall3 ::= asm(num : u64 weak, arg0 : u64 weak, arg1 : u64 weak, arg2 : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0,{rdi},{rsi},{rdx},~{rcx},~{r11},~{memory}';
+	syscall3 : asm("={rax},0,{rdi},{rsi},{rdx},~{rcx},~{r11},~{memory}" -> u64 weak)
+	{
+		syscall
+	};
 
-	syscall4 ::= asm(num : u64 weak, arg0 : u64 weak, arg1 : u64 weak, arg2 : u64 weak, arg3 : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0,{rdi},{rsi},{rdx},{r10},~{rcx},~{r11},~{memory}';
+	syscall4 : asm("={rax},0,{rdi},{rsi},{rdx},{r10},~{rcx},~{r11},~{memory}" -> u64 weak)
+	{
+		syscall
+	};
 
-	syscall5 ::= asm(num : u64 weak, arg0 : u64 weak, arg1 : u64 weak, arg2 : u64 weak, arg3 : u64 weak, arg4 : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0,{rdi},{rsi},{rdx},{r10},{r8},~{rcx},~{r11},~{memory}';
+	syscall5 : asm("={rax},0,{rdi},{rsi},{rdx},{r10},{r8},~{rcx},~{r11},~{memory}" -> u64 weak)
+	{
+		syscall
+	};
 
-	syscall6 ::= asm(num : u64 weak, arg0 : u64 weak, arg1 : u64 weak, arg2 : u64 weak, arg3 : u64 weak, arg4 : u64 weak, arg5 : u64 weak -> u64 weak) :=
-	'syscall' : '={rax},0,{rdi},{rsi},{rdx},{r10},{r8},{r9},~{rcx},~{r11},~{memory}';
+	syscall6 : asm("={rax},0,{rdi},{rsi},{rdx},{r10},{r8},{r9},~{rcx},~{r11},~{memory}" -> u64 weak)
+	{
+		syscall
+	};
 
-	read ::= func(fd : s32, buf : u8 mut?, count : u64 -> s64)
+
+	read : func(fd : s32, buf : u8 mut?, count : u64 -> s64)
 	{
 		return syscall3(syscall.read@s64, fd, buf, count);
 	};
 
-	write ::= func(fd : s32, buf : u8?, count : u64 -> s64)
+	write : func(fd : s32, buf : u8?, count : u64 -> s64)
 	{
 		return syscall3(syscall.write@s64, fd, buf, count);
 	};
 
-	open ::= func(path : u8?, flags : s32, mode : u32 -> s32)
+	open : func(path : u8?, flags : s32, mode : u32 -> s32)
 	{
 		return syscall3(syscall.open@s64, path, flags, mode);
 	};
 
-	close ::= func(fd : s32 -> s32)
+	close : func(fd : s32 -> s32)
 	{
 		return syscall1(syscall.close@s64, fd);
 	};
 
-	stat ::= func(path : u8?, statbuf : stat_t mut? -> s32)
+	stat : func(path : u8?, statbuf : stat_t mut? -> s32)
 	{
 		return syscall2(syscall.stat@s64, path, statbuf);
 	};
 
-	access ::= func(path : u8?, mode : s32 -> s32)
+	access : func(path : u8?, mode : s32 -> s32)
 	{
 		return syscall2(syscall.access@s64, path, mode);
 	};
 
-	mmap ::= func(addr : v0? weak, length : u64, prot : s32, flags : s32, fd : s32, offset : s64 -> v0? weak)
+	mmap : func(addr : v0? weak, length : u64, prot : s32, flags : s32, fd : s32, offset : s64 -> v0? weak)
 	{
 		return syscall6(syscall.mmap@s64, addr, length, prot, flags, fd, offset);
 	};
 
-	munmap ::= func(addr : v0? weak, length : u64 -> s32)
+	munmap : func(addr : v0? weak, length : u64 -> s32)
 	{
 		return syscall2(syscall.munmap@s64, addr, length);
 	};
 
-	mprotect ::= func(addr : v0? weak, size : u64, prot : s32 -> s32)
+	mprotect : func(addr : v0? weak, size : u64, prot : s32 -> s32)
 	{
 		return syscall3(syscall.mprotect@s64, addr, size, prot);
 	};
 
-	unlink ::= func(path : u8? -> s32)
+	unlink : func(path : u8? -> s32)
 	{
 		return syscall1(syscall.unlink@s64, path);
 	};
 
-	fork ::= func( -> s32)
+	fork : func( -> s32)
 	{
 		return syscall0(syscall.fork@s64);
 	};
 
-	execve ::= func(pathname : u8?, iargv : u8??, ienvp : u8?? -> s32)
+	execve : func(pathname : u8?, iargv : u8??, ienvp : u8?? -> s32)
 	{
 		return syscall3(syscall.execve@s64, pathname, iargv, ienvp);
 	};
 
-	exit ::= func(status : s32 -> v0)
+	exit : func(status : s32 -> v0)
 	{
 		syscall1(syscall.exit@s64, status);
 	};
 
-	wait4 ::= func(pid : s32, status : s32 mut?, options : s32, usage : v0? -> s32)
+	wait4 : func(pid : s32, status : s32 mut?, options : s32, usage : v0? -> s32)
 	{
 		return syscall4(syscall.wait4@s64, pid, status, options, usage);
 	};
 
-	mkdir ::= func(path : u8?, mode : u32 -> s32)
+	mkdir : func(path : u8?, mode : u32 -> s32)
 	{
 		return syscall2(syscall.mkdir@s64, path, mode);
 	};
 
-	rmdir ::= func(path : u8? -> s32)
+	rmdir : func(path : u8? -> s32)
 	{
 		return syscall1(syscall.rmdir@s64, path);
 	};
 
-	getdents ::= func(fd : s32, dirent : dirent?, count : u32 -> s64)
+	getdents : func(fd : s32, dirent : dirent?, count : u32 -> s64)
 	{
 		return syscall3(syscall.getdents@s64, fd, dirent, count);
 	};
 
-	getcwd ::= func(buf : u8 mut?, size : u64 -> u64)
+	getcwd : func(buf : u8 mut?, size : u64 -> u64)
 	{
 		return syscall2(syscall.getcwd@s64, buf, size);
 	};
 
-	chdir ::= func(path : u8? -> s32)
+	chdir : func(path : u8? -> s32)
 	{
 		return syscall1(syscall.chdir@s64, path);
 	};
 
-	clock_gettime ::= func(clk_id : s32, tp : timespec mut? -> s32)
+	clock_gettime : func(clk_id : s32, tp : timespec mut? -> s32)
 	{
 		return syscall2(syscall.clock_gettime@s64, clk_id, tp);
 	};
 
-	opendir ::= func(name : u8?, dirp : DIR mut? -> bool)
+	opendir : func(name : u8?, dirp : DIR mut? -> bool)
 	{
-		deref dirp = zero;
+		[dirp] = zero;
 		fd ::= open(name, O_RDONLY | O_DIRECTORY | O_CLOEXEC, zero);
 		if(fd < 0)
 		{
@@ -162,7 +177,7 @@ static if(_linux)
 		return true;
 	};
 
-	readdir ::= func(dirp : DIR mut? -> dirent?)
+	readdir : func(dirp : DIR mut? -> dirent?)
 	{
 		de : dirent? mut;
 		if((dirp->buf_pos) >= (dirp->buf_end))
@@ -181,13 +196,13 @@ static if(_linux)
 		return de;
 	};
 
-	closedir ::= func(dirp : DIR? -> s32)
+	closedir : func(dirp : DIR? -> s32)
 	{
 		// its allocated from an arena...
 		return 0;
 	};
 
-	waitpid ::= func(pid : s32, status : s32?, options : s32 -> s32)
+	waitpid : func(pid : s32, status : s32?, options : s32 -> s32)
 	{
 		return wait4(pid, status, options, zero);
 	};

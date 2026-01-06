@@ -1,13 +1,13 @@
-static if(_win32)
+static_if(_win32)
 {
-	GetStdHandle ::= func(handle : u32 -> u64) := extern;
-	WriteConsoleA ::= func(hConsoleOutput : u64, lpBuffer : u8?, write_count : u32, chars_written : u32 mut? weak, reserved : v0? -> s32) := extern;
-	//WriteFile ::= func(hFile : u64, lpBuffer : u8?, nNumberOfBytesToWrite : u32, chars_written : u32 mut? weak, lpOverlapped : v0? -> s32) := extern;
+	GetStdHandle : func(handle : u32 -> u64) extern;
+	WriteConsoleA : func(hConsoleOutput : u64, lpBuffer : u8?, write_count : u32, chars_written : u32 mut? weak, reserved : v0? -> s32) extern;
+	//WriteFile : func(hFile : u64, lpBuffer : u8?, nNumberOfBytesToWrite : u32, chars_written : u32 mut? weak, lpOverlapped : v0? -> s32) extern;
 }
 
-putbytes ::= func(chars : u8?, count : u64 -> v0)
+putbytes : func(chars : u8?, count : u64 -> v0)
 {
-	static if(_win32)
+	static_if(_win32)
 	{
 		WriteFile(GetStdHandle(4294967285@u32), chars, count@u32, zero, zero);
 	}
@@ -17,18 +17,18 @@ putbytes ::= func(chars : u8?, count : u64 -> v0)
 	}
 };
 
-putchar ::= func(char : u8 -> v0)
+putchar : func(char : u8 -> v0)
 {
 	chr ::= char;
 	putbytes(ref chr, 1);
 };
 
-sputchar ::= func(s : u8 mut?, char : u8 -> v0)
+sputchar : func(s : u8 mut?, char : u8 -> v0)
 {
 	deref(s # 0) = char;
 };
 
-lenuint ::= func(i : u64 weak -> u64)
+lenuint : func(i : u64 weak -> u64)
 {
 	if(i > 9)
 	{
@@ -37,7 +37,7 @@ lenuint ::= func(i : u64 weak -> u64)
 	return 1;
 };
 
-lensint ::= func(i : s64 weak -> u64)
+lensint : func(i : s64 weak -> u64)
 {
 	if(i < 0)
 	{
@@ -46,7 +46,7 @@ lensint ::= func(i : s64 weak -> u64)
 	return lenuint(i);
 };
 
-sputuint ::= func(s : u8 mut?, i : u64 weak -> u64)
+sputuint : func(s : u8 mut?, i : u64 weak -> u64)
 {
 	off : u64 mut := 0;
 	if(i > 9)
@@ -58,7 +58,7 @@ sputuint ::= func(s : u8 mut?, i : u64 weak -> u64)
 	return 1 + off;
 };
 
-putuint ::= func(i : u64 weak -> v0)
+putuint : func(i : u64 weak -> v0)
 {
 	if(i > 9)
 	{
@@ -68,7 +68,7 @@ putuint ::= func(i : u64 weak -> v0)
 	putchar('0' + digit);
 };
 
-putsint ::= func(i : s64 weak -> v0)
+putsint : func(i : s64 weak -> v0)
 {
 	if(i < 0)
 	{
@@ -81,7 +81,7 @@ putsint ::= func(i : s64 weak -> v0)
 	}
 };
 	
-putfloat ::= func(f: f64 weak -> v0)
+putfloat : func(f: f64 weak -> v0)
 {
 	if (f < 0.0)
 	{
@@ -106,7 +106,7 @@ putfloat ::= func(f: f64 weak -> v0)
 	putuint(decimal_part);
 };
 
-putzstr ::= func(zstr : u8? -> v0)
+putzstr : func(zstr : u8? -> v0)
 {
 	count : u64 mut := 0;
 	s : u8? mut := zstr;
@@ -118,7 +118,7 @@ putzstr ::= func(zstr : u8? -> v0)
 	putbytes(zstr, count);
 };
 
-putloc ::= func(loc : srcloc -> v0)
+putloc : func(loc : srcloc -> v0)
 {
 	putzstr(loc.file);
 	putchar('(');
