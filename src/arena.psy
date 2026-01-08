@@ -115,7 +115,7 @@ arena_destroy ::= func(a : arena mut? -> v0)
 			munmap(a->ptr, a->reserve);
 		}
 	}
-	deref a = zero;
+	deref(a) = zero;
 };
 
 _arena_dub ::= func(a : arena mut? -> v0)

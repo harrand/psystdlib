@@ -451,15 +451,15 @@ directory_get_cwd ::= func(dirname : u8? mut?, dirname_len : u64 mut?, a : arena
 	static if(_win32)
 	{
 		deref(dirname_len) = GetCurrentDirectoryA(0, zero)@_;
-		deref(dirname) = arena_alloc(a, deref dirname_len);
-		GetCurrentDirectoryA(deref(dirname_len)@_, deref dirname);
+		deref(dirname) = arena_alloc(a, deref(dirname_len));
+		GetCurrentDirectoryA(deref(dirname_len)@_, deref(dirname));
 	}
 	else
 	{
 		PATH_MAX ::= 4096;
 		deref(dirname) = arena_alloc(a, PATH_MAX);
-		getcwd(deref dirname, PATH_MAX);
-		deref(dirname_len) = (zstrlen(deref dirname)@_);
+		getcwd(deref(dirname), PATH_MAX);
+		deref(dirname_len) = (zstrlen(deref(dirname))@_);
 	}
 };
 

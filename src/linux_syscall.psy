@@ -152,7 +152,7 @@ static if(_linux)
 
 	opendir ::= func(name : u8?, dirp : DIR mut? -> bool)
 	{
-		deref dirp = zero;
+		deref(dirp) = zero;
 		fd ::= open(name, O_RDONLY | O_DIRECTORY | O_CLOEXEC, zero);
 		if(fd < 0)
 		{
