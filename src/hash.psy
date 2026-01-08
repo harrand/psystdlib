@@ -1,12 +1,12 @@
-hashdata ::= func(buf : u8? weak, buflen : u64 -> u64)
+hashdata : func(buf : u8? weak, buflen : u64 -> u64)
 {
 	hash : u64 mut := 14695981039346656037;
     prime : u64 := 1099511628211;
 	i : u64 mut;
 
-	for(i = 0, i < buflen, i = i + 1)
+	for(i = 0;  i < buflen;  i = i + 1)
 	{
-		cur64 ::= (deref(buf # i))@u64;
+		cur64 ::= ([buf # i])@u64;
 		hash = (hash ^ cur64);
 		hash = (hash * prime);
 	}
@@ -14,18 +14,13 @@ hashdata ::= func(buf : u8? weak, buflen : u64 -> u64)
 	return hash;
 };
 
-hashstr ::= func(cstr : u8? -> u64)
+hashstr : func(cstr : u8? -> u64)
 {
 	return hashdata(cstr, zstrlen(cstr));
 };
 
-hash ::= func(t : s64 weak -> u64 weak)
+hash : func(t : s64 weak -> u64 weak)
 {
 	t2 ::= t;
-	return hashdata(ref t2, __sizeof(t2));
+	return hashdata(ref t2, sizeof typeof(t2));
 };
-
-== build ==
-{
-	add_source_file("cstr.psy");
-}

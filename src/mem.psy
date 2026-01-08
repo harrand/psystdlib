@@ -1,35 +1,35 @@
-memcopy ::= func(dst : u8 mut? weak, src : u8? weak, len : u64 -> v0)
+memcopy : func(dst : u8 mut? weak, src : u8? weak, len : u64 -> v0)
 {
 	i : u64 mut;
-	for(i = 0, i < len, i = i + 1)
+	for(i = 0;  i < len;  i = i + 1)
 	{
-		deref(dst # i) = deref(src # i);
+		[dst # i] = [src # i];
 	}
 };
 
-memcopy_backwards ::= func(dst : u8 mut? weak, src : u8? weak, len : u64 -> v0)
+memcopy_backwards : func(dst : u8 mut? weak, src : u8? weak, len : u64 -> v0)
 {
 	i : s64 mut weak;
-	for(i = (len - 1), i >= 0, i = i - 1)
+	for(i = (len - 1);  i >= 0;  i = i - 1)
 	{
-		deref(dst # i) = deref(src # i);
+		[dst # i] = [src # i];
 	}
 };
 
-memfill ::= func(dst : u8 mut? weak, byte : u8, len : u64 -> v0)
+memfill : func(dst : u8 mut? weak, byte : u8, len : u64 -> v0)
 {
 	i : u64 mut;
-	for(i = 0, i < len, i = i + 1)
+	for(i = 0;  i < len;  i = i + 1)
 	{
-		deref(dst # i) = byte;
+		[dst # i] = byte;
 	}
 };
 
-memzero ::= func(dst : u8 mut? weak, len : u64 -> v0)
+memzero : func(dst : u8 mut? weak, len : u64 -> v0)
 {
 	i : u64 mut;
-	for(i = 0, i < len, i = i + 1)
+	for(i = 0;  i < len;  i = i + 1)
 	{
-		deref(dst # i) = zero;
+		[dst # i] = 0;
 	}
 };
