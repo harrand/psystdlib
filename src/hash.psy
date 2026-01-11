@@ -25,7 +25,3 @@ hash ::= func(t : s64 weak -> u64 weak)
 	return hashdata(ref t2, __sizeof(t2));
 };
 
-== build ==
-{
-	add_source_file("cstr.psy");
-}
