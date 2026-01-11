@@ -185,19 +185,19 @@ file_read ::= func(path : u8?, buf : u8 mut?, buflen : u64 -> v0)
 			return;
 		}
 
-		defer CloseHandle(handle);
 		ReadFile(handle, buf, buflen@_, zero, 0);
+		CloseHandle(handle);
 	}
 	else
 	{
 		fd ::= open(path, O_RDONLY, 0);
-		defer close(fd);
 		if(fd < 0)
 		{
 			// bad
 			return;
 		}
 		read(fd, buf, buflen);
+		close(fd);
 	}
 };
 
@@ -206,24 +206,24 @@ file_write ::= func(path : u8?, buf : u8?, buflen : u64 -> v0)
 	static if(_win32)
 	{
 		handle ::= CreateFileA(path, 1073741824, 3, 0, 3, 128, 0);
-		defer CloseHandle(handle);
 		if(handle == -1)
 		{
 			return;
 		}
 
 		WriteFile(handle, buf, buflen@_, zero, 0);
+		CloseHandle(handle);
 	}
 	else
 	{
 		fd ::= open(path, O_WRONLY | O_CREAT | O_TRUNC, 420);
-		defer close(fd);
 		if(fd < 0)
 		{
 			return;
 		}
 
 		write(fd, buf, buflen);
+		close(fd);
 	}
 };
 
@@ -341,7 +341,6 @@ directory_delete ::= func(path : u8?, a : arena mut? -> bool)
 		{
 			return false;
 		}
-		defer closedir(ref dir);
 		entry : dirent? mut := readdir(ref dir);
 		while(entry != zero)
 		{
@@ -372,6 +371,7 @@ directory_delete ::= func(path : u8?, a : arena mut? -> bool)
 			}
 			entry = readdir(ref dir);
 		}
+		closedir(ref dir);
 		return rmdir(path) == 0;
 	}
 };
@@ -422,7 +422,6 @@ directory_iterate ::= func(path : u8?, callback : func(path : u8? -> v0), a : ar
 		{
 			return;
 		}
-		defer closedir(ref dir);
 		entry : dirent? mut := readdir(ref dir);
 		while(entry != zero)
 		{
@@ -433,6 +432,7 @@ directory_iterate ::= func(path : u8?, callback : func(path : u8? -> v0), a : ar
 			}
 			entry = readdir(ref dir);
 		}
+		closedir(ref dir);
 	}
 };
 
