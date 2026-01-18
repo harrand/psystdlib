@@ -1,8 +1,8 @@
-zstrlen ::= func(zstr : u8? -> u64)
+zstrlen : func(zstr : u8? -> u64)
 {
 	ptr : u8? mut := zstr;
 	i : u64 mut := 0;
-	while(deref(ptr) != 0)
+	while([ptr] != 0)
 	{
 		ptr = ptr # 1;
 		i = i + 1;
@@ -10,29 +10,29 @@ zstrlen ::= func(zstr : u8? -> u64)
 	return i;
 };
 
-sstr2zstr ::= func(s : u8?, len : u64, a : arena mut? -> u8?)
+sstr2zstr : func(s : u8?, len : u64, a : arena mut? -> u8?)
 {
 	ret : u8 mut? := arena_alloc(a, len + 1);
 	memcopy(ret, s, len);
-	deref(ret # len) = 0;
+	[ret # len] = 0;
 	return ret;
 };
 
-strcpy_n ::= func(dst : u8 mut?, src : u8?, len : u64 -> v0)
+strcpy_n : func(dst : u8 mut?, src : u8?, len : u64 -> v0)
 {
 	i : u64 mut;
-	for(i = 0, i < len, i = i + 1)
+	for(i = 0; i < len; i = i + 1)
 	{
-		deref(dst # i) = deref(src # i);
+		[dst # i] = [src # i];
 	}
 };
 
-streql_n ::= func(l : u8?, r : u8?, len : u64 -> bool)
+streql_n : func(l : u8?, r : u8?, len : u64 -> bool)
 {
 	i : u64 mut;
-	for(i = 0, i < len, i = i + 1)
+	for(i = 0; i < len; i = i + 1)
 	{
-		if(deref(l # i) != deref(r # i))
+		if([l # i] != [r # i])
 		{
 			return false;
 		}
@@ -40,12 +40,12 @@ streql_n ::= func(l : u8?, r : u8?, len : u64 -> bool)
 	return true;
 };
 
-str_starts_with_n ::= func(str : u8?, needle : u8?, len : u64 -> bool)
+str_starts_with_n : func(str : u8?, needle : u8?, len : u64 -> bool)
 {
 	i : u64 mut;
-	for(i = 0, i < len, i = i + 1)
+	for(i = 0; i < len; i = i + 1)
 	{
-		if(deref(str # i) != deref(needle # i))
+		if([str # i] != [needle # i])
 		{
 			return false;
 		}
@@ -53,7 +53,7 @@ str_starts_with_n ::= func(str : u8?, needle : u8?, len : u64 -> bool)
 	return true;
 };
 
-zstr_starts_with ::= func(str : u8?, needle : u8? -> bool)
+zstr_starts_with : func(str : u8?, needle : u8? -> bool)
 {
 	len : u64 mut := zstrlen(str);
 	len2 ::= zstrlen(needle);
@@ -69,7 +69,7 @@ zstr_starts_with ::= func(str : u8?, needle : u8? -> bool)
 	return str_starts_with_n(str, needle, len);
 };
 
-zstreql ::= func(lhs : u8?, rhs : u8? -> bool)
+zstreql : func(lhs : u8?, rhs : u8? -> bool)
 {
 	llen ::= zstrlen(lhs);
 	rlen ::= zstrlen(rhs);

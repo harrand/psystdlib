@@ -1,12 +1,12 @@
-static if(_win32)
+static_if(_win32)
 {
-	SECURITY_ATTRIBUTES ::= struct
+	SECURITY_ATTRIBUTES : struct
 	{
 		nLength : u32;
 		lpSecurityDescriptor : v0?;
 		bInheritHandle : s32;
 	};
-	STARTUPINFOA ::= struct
+	STARTUPINFOA : struct
 	{
 		cb : u32;
 		lpReserved : u8?;
@@ -27,43 +27,43 @@ static if(_win32)
 		hStdOutput : u64;
 		hStdError : u64;
 	};
-	PROCESS_INFORMATION ::= struct
+	PROCESS_INFORMATION : struct
 	{
 		hProcess : u64;
 		hThread : u64;
 		dwProcessId : u32;
 		dwThreadId : u32;
 	};
-	CreateProcessA ::= func(lpApplicationName : u8?, lpCommandLine : u8?, lpProcessAttributes : SECURITY_ATTRIBUTES?, lpThreadAttributes : SECURITY_ATTRIBUTES?, bInheritHandles : s32, dwCreationFlags : s32, lpEnvironment : v0?, lpCurrentDirectory : u8?, lpStartupInfo : STARTUPINFOA?, lpProcessInformation : PROCESS_INFORMATION? -> s32 ):= extern;
-	WaitForSingleObject ::= func(handle : u64, dwMilliSeconds : u32 -> u32 ):= extern;
-	GetExitCodeProcess ::= func(hProcess : u64, lpExitCode : u32 mut? -> s32 ):= extern;
+	CreateProcessA : func(lpApplicationName : u8?, lpCommandLine : u8?, lpProcessAttributes : SECURITY_ATTRIBUTES?, lpThreadAttributes : SECURITY_ATTRIBUTES?, bInheritHandles : s32, dwCreationFlags : s32, lpEnvironment : v0?, lpCurrentDirectory : u8?, lpStartupInfo : STARTUPINFOA?, lpProcessInformation : PROCESS_INFORMATION? -> s32 )extern;
+	WaitForSingleObject : func(handle : u64, dwMilliSeconds : u32 -> u32 )extern;
+	GetExitCodeProcess : func(hProcess : u64, lpExitCode : u32 mut? -> s32 )extern;
 }
 else
 {
-	WIFEXITED ::= func(status : s32 -> bool)
+	WIFEXITED : func(status : s32 -> bool)
 	{
 		return (status & 0x7F) == zero;
 	};
 
-	WEXITSTATUS ::= func(status : s32 -> s32)
+	WEXITSTATUS : func(status : s32 -> s32)
 	{
 		return (status >> 8) & 0xFF;
 	};
 
-	WIFSIGNALLED ::= func(status : s32 -> bool)
+	WIFSIGNALLED : func(status : s32 -> bool)
 	{
 		st ::= status & 0x7F;
 		return (st != zero) || (((st + 1) >> 1) > 0);
 	};
 }
 
-static if(_win32)
+static_if(_win32)
 {
-	sys_command_impl_win32 ::= func(cmd : u8? -> u32)
+	sys_command_impl_win32 : func(cmd : u8? -> u32)
 	{
 		si : STARTUPINFOA mut := zero;
 		pinfo : PROCESS_INFORMATION mut := zero;
-		(si.cb) = __sizeof(STARTUPINFOA);
+		(si.cb) = sizeof STARTUPINFOA;
 		STARTF_USESTDHANDLES ::= 0x00000100;
 		(si.dwFlags) = STARTF_USESTDHANDLES;
 		STD_OUTPUT_HANDLE ::= -11@u32;
@@ -73,7 +73,7 @@ static if(_win32)
 
 		if(CreateProcessA(zero, cmd, zero, zero, true@s32, 0, zero, zero, ref si, ref pinfo) == 0)
 		{
-			return false;
+			return false@_;
 		}
 		WaitForSingleObject(pinfo.hProcess, -1);
 		exit_code : u32 mut := 0;
@@ -82,15 +82,15 @@ static if(_win32)
 	};
 }
 
-sys_shell_command ::= func(cmd : u8?, cmdlen : u64, ienvp : u8??, a : arena mut? -> u32)
+sys_shell_command : func(cmd : u8?, cmdlen : u64, ienvp : u8??, a : arena mut? -> u32)
 {
-	static if(_win32)
+	static_if(_win32)
 	{
 		precmd ::= "cmd.exe /C ";
 		fullcmd : u8 mut? := arena_alloc(a, 11 + cmdlen + 1);
 		memcopy(fullcmd, precmd, zstrlen(precmd));
 		memcopy(fullcmd # 11, cmd, cmdlen);
-		deref(fullcmd # (11 + cmdlen)) = 0;
+		[fullcmd # (11 + cmdlen)] = 0;
 		return sys_command_impl_win32(fullcmd);
 	}
 	else
@@ -100,7 +100,7 @@ sys_shell_command ::= func(cmd : u8?, cmdlen : u64, ienvp : u8??, a : arena mut?
 		if(pid == 0)
 		{
 			// child
-			shell_argv ::= u8?[4]{"sh"; "-c"; cmd_zstr; zero;};
+			shell_argv ::= u8?[4]{.0 := "sh"; .1 := "-c"; .2 := cmd_zstr; .3 := zero;};
 			execve("/bin/sh", shell_argv # 0, ienvp);
 		}
 		else

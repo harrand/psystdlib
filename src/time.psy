@@ -1,16 +1,16 @@
-static if(_win32)
+static_if(_win32)
 {
-	QueryPerformanceCounter ::= func(lpPerformanceCount : s64 mut? -> s32 ):= extern;
-	QueryPerformanceFrequency ::= func(lpPerformanceCount : s64 mut? -> s32 ):= extern;
+	QueryPerformanceCounter : func(lpPerformanceCount : s64 mut? -> s32 )extern;
+	QueryPerformanceFrequency : func(lpPerformanceCount : s64 mut? -> s32 )extern;
 }
 else
 {
 }
 
 // get the time, in microseconds
-time_static ::= func(-> s64)
+time_static : func(-> s64)
 {
-	static if(_win32)
+	static_if(_win32)
 	{
 		t : s64 mut;
 		QueryPerformanceCounter(ref t);
