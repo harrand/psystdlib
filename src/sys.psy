@@ -128,7 +128,7 @@ sys_shell_command : func(cmd : u8?, cmdlen : u64, ienvp : u8??, a : arena mut? -
 				}
 			}
 		}
-		return true;
+		return true@_;
 	}
 };
 

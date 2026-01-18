@@ -73,6 +73,7 @@ static_if(_win32)
 }
 else
 {
+
 	stat_t : struct
 	{
 		st_dev : u64;
@@ -446,7 +447,7 @@ else
 {
 }
 
-directory_get_cwd : func(dirname : u8? mut? weak, dirname_len : u64 mut?, a : arena mut? -> v0)
+directory_get_cwd : func(dirname : u8 mut? mut? weak, dirname_len : u64 mut?, a : arena mut? -> v0)
 {
 	static_if(_win32)
 	{
@@ -459,7 +460,10 @@ directory_get_cwd : func(dirname : u8? mut? weak, dirname_len : u64 mut?, a : ar
 		PATH_MAX ::= 4096;
 		[dirname] = arena_alloc(a, PATH_MAX);
 		getcwd([dirname], PATH_MAX);
-		[dirname_len] = (zstrlen([dirname])@_);
+		//cwd_len : u64 := zstrlen([dirname]);
+		[dirname_len] = (zstrlen([dirname]) + 1);
+		[[dirname] # zstrlen([dirname])] = '/';
+		[[dirname] # (zstrlen([dirname]) + 1)] = 0;
 	}
 };
 

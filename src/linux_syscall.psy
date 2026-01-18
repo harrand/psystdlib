@@ -67,17 +67,17 @@ static_if(_linux)
 
 	read : func(fd : s32, buf : u8 mut?, count : u64 -> s64)
 	{
-		return syscall3(syscall.read@s64, fd, buf, count);
+		return syscall3(syscall.read@s64, fd, buf@u64, count);
 	};
 
 	write : func(fd : s32, buf : u8?, count : u64 -> s64)
 	{
-		return syscall3(syscall.write@s64, fd, buf, count);
+		return syscall3(syscall.write@s64, fd, buf@u64, count);
 	};
 
 	open : func(path : u8?, flags : s32, mode : u32 -> s32)
 	{
-		return syscall3(syscall.open@s64, path, flags, mode);
+		return syscall3(syscall.open@s64, path@u64, flags, mode);
 	};
 
 	close : func(fd : s32 -> s32)
@@ -87,32 +87,32 @@ static_if(_linux)
 
 	stat : func(path : u8?, statbuf : stat_t mut? -> s32)
 	{
-		return syscall2(syscall.stat@s64, path, statbuf);
+		return syscall2(syscall.stat@s64, path@u64, statbuf@u64);
 	};
 
 	access : func(path : u8?, mode : s32 -> s32)
 	{
-		return syscall2(syscall.access@s64, path, mode);
+		return syscall2(syscall.access@s64, path@u64, mode);
 	};
 
 	mmap : func(addr : v0? weak, length : u64, prot : s32, flags : s32, fd : s32, offset : s64 -> v0? weak)
 	{
-		return syscall6(syscall.mmap@s64, addr, length, prot, flags, fd, offset);
+		return syscall6(syscall.mmap@s64, addr@u64, length, prot, flags, fd, offset)@u64;
 	};
 
 	munmap : func(addr : v0? weak, length : u64 -> s32)
 	{
-		return syscall2(syscall.munmap@s64, addr, length);
+		return syscall2(syscall.munmap@s64, addr@u64, length);
 	};
 
 	mprotect : func(addr : v0? weak, size : u64, prot : s32 -> s32)
 	{
-		return syscall3(syscall.mprotect@s64, addr, size, prot);
+		return syscall3(syscall.mprotect@s64, addr@u64, size, prot);
 	};
 
 	unlink : func(path : u8? -> s32)
 	{
-		return syscall1(syscall.unlink@s64, path);
+		return syscall1(syscall.unlink@s64, path@u64);
 	};
 
 	fork : func( -> s32)
@@ -122,7 +122,7 @@ static_if(_linux)
 
 	execve : func(pathname : u8?, iargv : u8??, ienvp : u8?? -> s32)
 	{
-		return syscall3(syscall.execve@s64, pathname, iargv, ienvp);
+		return syscall3(syscall.execve@s64, pathname@u64, iargv@u64, ienvp@u64);
 	};
 
 	exit : func(status : s32 -> v0)
@@ -132,37 +132,37 @@ static_if(_linux)
 
 	wait4 : func(pid : s32, status : s32 mut?, options : s32, usage : v0? -> s32)
 	{
-		return syscall4(syscall.wait4@s64, pid, status, options, usage);
+		return syscall4(syscall.wait4@s64, pid, status@u64, options, usage@u64);
 	};
 
 	mkdir : func(path : u8?, mode : u32 -> s32)
 	{
-		return syscall2(syscall.mkdir@s64, path, mode);
+		return syscall2(syscall.mkdir@s64, path@u64, mode);
 	};
 
 	rmdir : func(path : u8? -> s32)
 	{
-		return syscall1(syscall.rmdir@s64, path);
+		return syscall1(syscall.rmdir@s64, path@u64);
 	};
 
 	getdents : func(fd : s32, dirent : dirent?, count : u32 -> s64)
 	{
-		return syscall3(syscall.getdents@s64, fd, dirent, count);
+		return syscall3(syscall.getdents@s64, fd, dirent@u64, count);
 	};
 
 	getcwd : func(buf : u8 mut?, size : u64 -> u64)
 	{
-		return syscall2(syscall.getcwd@s64, buf, size);
+		return syscall2(syscall.getcwd@s64, buf@u64, size);
 	};
 
 	chdir : func(path : u8? -> s32)
 	{
-		return syscall1(syscall.chdir@s64, path);
+		return syscall1(syscall.chdir@s64, path@u64);
 	};
 
 	clock_gettime : func(clk_id : s32, tp : timespec mut? -> s32)
 	{
-		return syscall2(syscall.clock_gettime@s64, clk_id, tp);
+		return syscall2(syscall.clock_gettime@s64, clk_id, tp@u64);
 	};
 
 	opendir : func(name : u8?, dirp : DIR mut? -> bool)
@@ -187,12 +187,12 @@ static_if(_linux)
 			{
 				return zero;
 			}
-			dirp->buf_end = len@_;
+			dirp->buf_end = (len@_);
 			dirp->buf_pos = 0;
 		}
-		de = (dirp->buf # (dirp->buf_pos))@dirent?;
+		de = ((dirp->buf # (dirp->buf_pos))@dirent?);
 		dirp->buf_pos = ((dirp->buf_pos) + (de->d_reclen@_));
-		dirp->tell = (de->d_off)@_;
+		dirp->tell = ((de->d_off)@_);
 		return de;
 	};
 
