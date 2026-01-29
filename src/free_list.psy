@@ -56,7 +56,7 @@ free_list_pop : func(l : free_list mut?, len : u64 -> v0? weak)
 			return cur;
 		}
 		prev = cur;
-		cur = (cur->next@_);
+		cur = (cur->next);
 	}
 	return zero;
 };
@@ -68,7 +68,7 @@ free_list_total_size : func(l : free_list? -> u64)
 	while(cur != zero)
 	{
 		total = total + (cur->size);
-		cur = (cur->next@_);
+		cur = (cur->next);
 	}
 	return total;
 };
@@ -82,7 +82,7 @@ free_list_avg_size : func(l : free_list? -> u64)
 	{
 		total = total + (cur->size);
 		count = count + 1;
-		cur = (cur->next@_);
+		cur = (cur->next);
 	}
 	if(count == 0)
 	{
@@ -116,5 +116,5 @@ _free_node_split : func(node : free_node mut?, threshold : u64 -> free_node mut?
 		};
 		return newnode;
 	}
-	return node->next@_;
+	return node->next;
 };
