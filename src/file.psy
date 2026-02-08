@@ -73,6 +73,11 @@ static_if(_win32)
 }
 else
 {
+	timespec : struct
+	{
+		tv_sec : u64;
+		tv_nsec : u64;
+	};
 
 	stat_t : struct
 	{
