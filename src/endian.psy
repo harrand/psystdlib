@@ -134,6 +134,33 @@ bwritef64 : func(w : bwriter mut?, f : f64 weak -> v0)
 	bwrite64(w, [ref(fcpy)@u64?]);
 };
 
+bwrite_zstr : func(w : bwriter mut?, z : u8? -> v0)
+{
+	bwrite_bytes(w, z, zstrlen(z));
+};
+
+bwrite_uint : func(w : bwriter mut?, u : u64 weak -> v0)
+{
+	if(u > 9)
+	{
+		bwrite_uint(w, u / 10);
+	}
+	digit ::= u - ((u / 10) * 10);
+	bwrite8(w, '0' + digit);
+};
+
+bwrite_sint : func(w : bwriter mut?, s : s64 weak -> v0)
+{
+	if(s < 0)
+	{
+		bwrite_uint(w, -s);
+	}
+	else
+	{
+		bwrite_uint(w, s);
+	}
+};
+
 breader : struct
 {
 	endian : endianness;
