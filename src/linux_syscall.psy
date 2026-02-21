@@ -26,6 +26,7 @@ static_if(_linux)
 		.mkdir := 83;
 		.rmdir := 83;
 		.unlink := 87;
+		.chmod := 90;
 		.clock_gettime := 228;
 	};
 
@@ -113,6 +114,11 @@ static_if(_linux)
 	unlink : func(path : u8? -> s32)
 	{
 		return syscall1(syscall.unlink@s64, path@u64);
+	};
+
+	chmod : func(path : u8?, mode : s32 -> s32)
+	{
+		return syscall2(syscall.chmod@s64, path@u64, mode);
 	};
 
 	fork : func( -> s32)

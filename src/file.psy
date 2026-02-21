@@ -150,6 +150,14 @@ file_exists : func(path_zstr : u8? -> bool)
 	}
 };
 
+file_ensure_executable : func(path : u8? -> v0)
+{
+	static_if(_linux)
+	{
+		chmod(path, 0x1c0);
+	}
+};
+
 file_size_bytes : func(path : u8? -> u64)
 {
 	static_if(_win32)
