@@ -153,6 +153,7 @@ bwrite_sint : func(w : bwriter mut?, s : s64 weak -> v0)
 {
 	if(s < 0)
 	{
+		bwrite8(w, '-');
 		bwrite_uint(w, -s);
 	}
 	else
