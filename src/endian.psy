@@ -162,6 +162,44 @@ bwrite_sint : func(w : bwriter mut?, s : s64 weak -> v0)
 	}
 };
 
+bwrite_float : func(w : bwriter mut?, f : f64 weak -> v0)
+{
+	if(f < 0.0)
+	{
+		if(f != f)
+		{
+			bwrite_zstr(w, "NaN");
+			return;
+		}
+		bwrite8(w, '-');
+		bwrite_float(w, -f);
+	}
+	
+	scale ::= 10000000000.0; // 10^10
+
+	// Multiply first, then add 0.5 to round, then cast to integer
+	scaled ::= (f * scale + 0.5)@s64;
+
+	int_part ::= scaled / 10000000000;
+	decimal_part ::= scaled % 10000000000;
+
+	bwrite_uint(w, int_part);
+	bwrite8(w, '.');
+
+	// Pad leading zeros for decimal part (up to 10 digits)
+	divisor : s64 mut := 1000000000; // 10^9
+	while(divisor > 0)
+	{
+		if(decimal_part < divisor)
+		{
+			bwrite8(w, '0');
+		}
+		divisor = divisor / 10;
+	}
+
+	bwrite_uint(w, decimal_part);
+};
+
 breader : struct
 {
 	endian : endianness;
