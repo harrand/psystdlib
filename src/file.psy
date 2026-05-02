@@ -480,6 +480,14 @@ directory_get_cwd : func(dirname : u8 mut? mut? weak, dirname_len : u64 mut?, a 
 	}
 };
 
+directory_get_cwdz : func(a : arena mut? -> u8?)
+{
+	ret : u8 mut? mut;
+	retlen : u64 mut;
+	directory_get_cwd(ref ret, ref retlen, a);
+	return sstr2zstr(ret, retlen, a);
+};
+
 directory_set_cwdz : func(dirname_zstr : u8? -> v0)
 {
 	static_if(_win32)
