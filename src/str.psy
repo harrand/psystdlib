@@ -14,6 +14,16 @@ sstrdata : func(s : sstr -> u8 mut?)
 	return s.data;
 };
 
+sstreql : func(lhs : sstr, rhs : sstr -> bool)
+{
+	len ::= sstrlen(lhs);
+	if(len != sstrlen(rhs))
+	{
+		return false;
+	}
+	return streql_n(sstrdata(lhs), sstrdata(rhs), len);
+};
+
 zstrlen : func(zstr : u8? -> u64)
 {
 	ptr : u8? mut := zstr;
