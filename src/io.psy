@@ -123,6 +123,11 @@ putzstr : func(zstr : u8? -> v0)
 	putbytes(zstr, count);
 };
 
+putsstr : func(s : sstr -> v0)
+{
+	putbytes(sstrdata(s), sstrlen(s));
+};
+
 putloc : func(loc : srcloc -> v0)
 {
 	putzstr(loc.file);

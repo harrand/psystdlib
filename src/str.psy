@@ -1,3 +1,19 @@
+sstr : struct
+{
+	data : u8 mut? weak;
+	len : u64;
+};
+
+sstrlen : func(s : sstr -> u64)
+{
+	return s.len;
+};
+
+sstrdata : func(s : sstr -> u8 mut?)
+{
+	return s.data;
+};
+
 zstrlen : func(zstr : u8? -> u64)
 {
 	ptr : u8? mut := zstr;
