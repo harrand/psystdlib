@@ -44,6 +44,11 @@ sstr2zstr : func(s : u8?, len : u64, a : arena mut? -> u8?)
 	return ret;
 };
 
+zstr2sstr : func(z : u8? -> sstr)
+{
+	return sstr{.data := z; .len := zstrlen(z);};
+};
+
 strcpy_n : func(dst : u8 mut?, src : u8?, len : u64 -> v0)
 {
 	i : u64 mut;
