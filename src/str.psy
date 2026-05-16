@@ -100,6 +100,24 @@ zstr_starts_with : func(str : u8?, needle : u8? -> bool)
 	return str_starts_with_n(str, needle, len);
 };
 
+str_ends_with_n : func(str : u8?, needle : u8?, len : u64 -> bool)
+{
+	i : u64 mut;
+	needle_len ::= zstrlen(needle);
+	if(needle_len > len)
+	{
+		return false;
+	}
+	for(i = len - needle_len; i < len; i = i + 1)
+	{
+		if([str # i] != [needle # i])
+		{
+			return false;
+		}
+	}
+	return true;
+};
+
 zstreql : func(lhs : u8?, rhs : u8? -> bool)
 {
 	llen ::= zstrlen(lhs);
@@ -114,4 +132,26 @@ zstreql : func(lhs : u8?, rhs : u8? -> bool)
 		min = llen;
 	}
 	return streql_n(lhs, rhs, min);
+};
+
+zstr_combine : func(lhs : u8?, rhs : u8?, a : arena mut? -> u8?)
+{
+	lhsl ::= zstrlen(lhs);
+	rhsl ::= zstrlen(rhs);
+	ret : u8 mut? := arena_alloc(a, lhsl + rhsl + 1);
+	memcopy(ret # 0, lhs, lhsl);
+	memcopy(ret # lhsl, rhs, rhsl);
+	[ret # (lhsl + rhsl)] = zero;
+	return ret;
+};
+
+zpath_combine : func(lhs : u8?, rhs : u8?, a : arena mut? -> u8?)
+{
+	lhs_with_tail : u8? mut := lhs;
+	lhslen ::= zstrlen(lhs);
+	if([lhs_with_tail # (lhslen - 1)] != '/')
+	{
+		lhs_with_tail = zstr_combine(lhs_with_tail, "/", a);
+	}
+	return zstr_combine(lhs_with_tail, rhs, a);
 };
