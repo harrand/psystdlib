@@ -19,7 +19,7 @@ arena_type : enum
 };
 
 // recommended address space reserve size for virtual reserve arenas.
-arena_default_reserve ::= 8000000000;
+arena_default_reserve ::= 16000000000;
 static_if(_win32)
 {
 	VirtualAlloc : func(lpAddress : v0?, dwSize : u64, flAllocationType : s64, flProtect : s64 -> v0?) extern;
@@ -159,6 +159,11 @@ arena_alloc : func(a : arena mut?, size : u64 -> v0? weak)
 		return freed;
 	}
 	
+
+	addr ::= (a->ptr)@u64 mut;
+	arena_align(a, a->auto_align);
+	addr = addr + (a->cur);
+	(a->cur) = (a->cur) + size;
 	while(((a->cur) + size) > (a->cap))
 	{
 		if(a->type == arena_type.preallocated)
@@ -167,11 +172,6 @@ arena_alloc : func(a : arena mut?, size : u64 -> v0? weak)
 		}
 		_arena_dub(a);
 	}
-
-	addr ::= (a->ptr)@u64 mut;
-	arena_align(a, a->auto_align);
-	addr = addr + (a->cur);
-	(a->cur) = (a->cur) + size;
 	return addr@_;
 };
 
